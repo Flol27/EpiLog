@@ -1,0 +1,17 @@
+name: Deploy to server
+on:
+  push:
+    branches: [ main ]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3  # Verwende die neueste Version
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.1  # Überprüfe auf aktuelle Version
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Sync files to server
+        run: |
+          rsync -avz --delete ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.TARGET_DIR }} -p 2200
