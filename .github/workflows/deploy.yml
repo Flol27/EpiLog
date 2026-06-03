@@ -6,9 +6,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3  # Verwende die neueste Version
       - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@v0.9.1  # Überprüfe auf aktuelle Version
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Sync files to server
