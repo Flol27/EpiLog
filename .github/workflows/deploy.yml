@@ -5,15 +5,21 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3  # Verwende die neueste Version
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.1  # Überprüfe auf aktuelle Version
+        uses: actions/checkout@v4
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.1
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Add server to known hosts
+        run: |
+          ssh-keyscan -p 2200 ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
       - name: Sync files to server
         run: |
-          rsync -avz --delete ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.TARGET_DIR }} -p 2200
+          rsync -avz --delete \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='.env' \
+            -e "ssh -p 2200" \
+            ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.TARGET_DIR }}
