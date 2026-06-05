@@ -1,0 +1,8 @@
+git clone https://github.com/EUER-REPO
+cd epilog
+npm install
+npm run dev
+
+Das npm install machen
+damit installiert man noch node_modules lokal bei sich, 
+weil das ja nicht im Repo ist.
