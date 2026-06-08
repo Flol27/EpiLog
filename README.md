@@ -1,4 +1,4 @@
-# 📚 BookStack
+# 📚 EpiLog
 
 > Eine soziale Buchtracking-Plattform – Bücher scannen, Lesefortschritt verfolgen und mit anderen Lesern teilen.
 
@@ -55,8 +55,8 @@
 
 ```bash
 # 1. Repository klonen
-git clone https://github.com/[euer-username]/bookstack.git
-cd bookstack
+git clone https://github.com/Flol27/EpiLog.git
+cd EpiLog
 
 # 2. Abhängigkeiten installieren
 npm install
@@ -94,8 +94,8 @@ Nach dem Seeding sind folgende Accounts verfügbar:
 
 | Rolle | E-Mail | Passwort |
 |-------|--------|----------|
-| Admin | admin@bookstack.de | Admin1234! |
-| Nutzer | test@bookstack.de | Test1234! |
+| Admin | admin@epilog.de | admin |
+| Nutzer | test@epilog.de | EpiLog |
 
 ---
 
@@ -128,23 +128,18 @@ Eine vollständige **Postman Collection** liegt unter `/docs/BookStack.postman_c
 ## 🗂️ Projektstruktur
 
 ```
-bookstack/
-├── src/
-│   ├── config/         # Datenbank- und App-Konfiguration
-│   ├── controllers/    # Request-Handler (Auth, Books, Shelf, Reviews)
-│   ├── middleware/     # JWT-Authentifizierung, Error-Handler
-│   ├── models/         # Sequelize-Modelle (User, Book, ShelfEntry, Review)
-│   ├── routes/         # Express-Router
-│   └── app.js          # Express App Entry Point
-├── public/
-│   ├── css/            # Bootstrap + eigene Styles
-│   ├── js/             # Frontend JavaScript
-│   └── views/          # HTML-Templates
-├── docs/
-│   └── BookStack.postman_collection.json
-├── .env.example
+/
+├── app/
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── public/         # Pictures & Co.
+├── eslint.config.mjs
+├── next.config.ts
 ├── package.json
-└── README.md
+├── postcss.config.mjs
+├── README.md
+└── tsconfig.json
 ```
 
 ---
