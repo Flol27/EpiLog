@@ -60,7 +60,7 @@ jobs:
         run: |
           ssh -p 2200 -i ~/.ssh/id_rsa \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-            "pm2 restart nextjs-app \
+            "pm2 restart epilog \
              || pm2 start ${{ secrets.TARGET_DIR }}/server.js \
                 --name nextjs-app \
                 --interpreter node"
