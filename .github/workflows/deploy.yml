@@ -1,16 +1,33 @@
-name: Deploy to server
+# ============================================================
+# Option B: Standalone  (output: 'standalone' in next.config.js)
+# Baut Next.js -> .next/standalone/ -> rsync -> PM2 Restart
+# SSR und API-Routes funktionieren, Node.js + PM2 auf Server nötig
+# ============================================================
+name: Build & Deploy Next.js (Standalone)
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6          # v6 = Node.js 24, kein Warning
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'       # muss mit Node.js-Version auf dem Server übereinstimmen
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Next.js
+        run: npm run build         # erzeugt .next/standalone/, .next/static/, public/
 
       - name: Setup SSH key
         run: |
@@ -19,11 +36,33 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p 2200 ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Sync files to server
+      - name: Deploy standalone build
         run: |
+          # 1) Standalone-Server (enthält bereits node_modules)
           rsync -avz --delete \
-            --exclude='.git' \
-            --exclude='node_modules' \
-            --exclude='.env' \
             -e "ssh -p 2200 -i ~/.ssh/id_rsa" \
-            ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.TARGET_DIR }}
+            ./.next/standalone/ \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.TARGET_DIR }}/
+
+          # 2) Statische Assets (CSS, JS, Images) – werden vom standalone nicht mitgeliefert
+          rsync -avz --delete \
+            -e "ssh -p 2200 -i ~/.ssh/id_rsa" \
+            ./.next/static/ \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.TARGET_DIR }}/.next/static/
+
+          # 3) Public-Ordner (Fonts, Bilder usw.)
+          rsync -avz --delete \
+            -e "ssh -p 2200 -i ~/.ssh/id_rsa" \
+            ./public/ \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.TARGET_DIR }}/public/
+
+      - name: Restart app via PM2
+        run: |
+          ssh -p 2200 -i ~/.ssh/id_rsa \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+            "pm2 restart nextjs-app \
+             || pm2 start ${{ secrets.TARGET_DIR }}/server.js \
+                --name nextjs-app \
+                --interpreter node"
+          # Falls PM2 noch nicht läuft: startet die App neu
+          # Falls schon läuft: restart reicht
