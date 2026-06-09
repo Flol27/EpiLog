@@ -8,9 +8,9 @@ export default function Home() {
       <Script className="KAOscript" src="https://keepandroidopen.org/banner.js"/>
       <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
+          className="light:bg-black"
+          src="/portainer-dark.svg"
+          alt="Portainter logo"
           width={100}
           height={20}
           priority
@@ -22,14 +22,14 @@ export default function Home() {
           <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
             Was ist den los!?{" "}
             <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+              href="https://epilog.schamagusa.de"
               className="font-medium text-zinc-950 dark:text-zinc-50"
             >
              IWAS
             </a>{" "}
             oder{" "}
             <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+              href="https://schamagusa.de"
               className="font-medium text-zinc-950 dark:text-zinc-50"
             >
               EBBES
@@ -46,7 +46,7 @@ export default function Home() {
           >
             <Image
               className="dark:invert"
-              src="/vercel.svg"
+              src="/immich-logo.svg"
               alt="Vercel logomark"
               width={16}
               height={16}
@@ -59,6 +59,13 @@ export default function Home() {
             target="_blank"
             rel="noopener noreferrer"
           >
+            <Image
+            className="dark:invert"
+            src="/dashboard.svg"
+            alt="Vercel logomark"
+            width={16}
+            height={16}
+            />
             Klick mich nicht
           </a>
         </div>
