@@ -6,35 +6,35 @@ export default function Home() {
 
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <Script className="KAOscript" src="https://keepandroidopen.org/banner.js"/>
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between bg-white dark:bg-black py-32 px-16 sm:items-start">
         <Image
-          className="light:bg-black"
-          src="/portainer-dark.svg"
+        className="bg-white flex h-full w-full items-center justify-center rounded-full transition-colors hover:bg-black/[.04] dark:hover:bg-[#1a1a1a]"
+          src="/epilog.svg"
           alt="Portainter logo"
           width={100}
-          height={20}
+          height={100}
           priority
         />
         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
           <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            Hallo Freunde der Sonne.
+            Guten Tag Leser.
           </h1>
           <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Was ist den los!?{" "}
+            Endlich mal wieder was lesen?{" "}
             <a
               href="https://epilog.schamagusa.de"
               className="font-medium text-zinc-950 dark:text-zinc-50"
             >
-             IWAS
+             Lies mich
             </a>{" "}
             oder{" "}
             <a
               href="https://schamagusa.de"
               className="font-medium text-zinc-950 dark:text-zinc-50"
             >
-              EBBES
+              lies mich.
             </a>{" "}
-            mitte.
+            Du darfst dich entscheiden...
           </p>
         </div>
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
@@ -45,8 +45,8 @@ export default function Home() {
             rel="noopener noreferrer"
           >
             <Image
-              className="dark:invert"
-              src="/immich-logo.svg"
+              className=""
+              src="/epilog.svg"
               alt="Vercel logomark"
               width={16}
               height={16}
