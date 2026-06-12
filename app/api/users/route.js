@@ -24,7 +24,9 @@ export async function GET() {
 
     } catch (error) {
         return NextResponse.json(
-            { error: 'Fehler beim Abrufen der Nutzerdaten' },
+            { error: 'Fehler beim Abrufen der Nutzerdaten',
+              message: error.message
+            },
             { status: 500 }
         );
     }
