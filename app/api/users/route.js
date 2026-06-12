@@ -4,21 +4,22 @@ import { openDb } from '@/app/lib/db';
 
 export async function GET() {
     try {
-        // 2. Cookie abfragen
-        const cookieStore = await cookies();
-        const sessionCookie = cookieStore.get('session_user_id');
 
-        // 3. Wenn das Cookie nicht existiert -> Zugriff verweigern
-        if (!sessionCookie) {
-            return NextResponse.json(
-                { error: 'Nicht autorisiert. Bitte zuerst einloggen.' },
-                { status: 401 }
-            );
-        }
+        // // 2. Cookie abfragen
+        // const cookieStore = await cookies();
+        // const sessionCookie = cookieStore.get('session_user_id');
+        //
+        // // 3. Wenn das Cookie nicht existiert -> Zugriff verweigern
+        // if (!sessionCookie) {
+        //     return NextResponse.json(
+        //         { error: 'Nicht autorisiert. Bitte zuerst einloggen.' },
+        //         { status: 401 }
+        //     );
+        // }
 
         // 4. Wenn das Cookie da ist -> Datenbank abfragen
-        const db = await openDb();
-        const users = await db.all('SELECT id, email FROM users'); // Passwort hier weglassen!
+        const db = await openDb(process.env.DB);
+        const users = await db.all('SELECT id, email, firstname, lastname FROM users'); // Passwort hier weglassen!
 
         return NextResponse.json(users, { status: 200 });
 

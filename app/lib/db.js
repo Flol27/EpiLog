@@ -1,15 +1,20 @@
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
+import fs from 'fs';
+import bcrypt from 'bcrypt';
 
-export async function openDb() {
-    const db = await open({
-        filename: './epilog_test.sqlite', // Wird erstellt, falls nicht vorhanden
-        driver: sqlite3.Database
-    }); //IF NOT EXISTS
+
+export async function openDb(path) {
+    const exists = fs.existsSync(path);
+    const db = await open({filename: path, driver: sqlite3.Database});
 
     // AI said ...
     await db.exec('PRAGMA foreign_keys = ON;');
 
+    if(!exists){await initDb(db);} //Init DB
+    return db;
+}
+export async function initDb(db) {
 
     // Authors
     await db.exec(`
@@ -22,9 +27,9 @@ export async function openDb() {
 
     // Books
     await db.exec(`
-    CREATE TABLE IF NOT EXISTS "books" (
+    CREATE TABLE "books" (
         "book_id"	INTEGER NOT NULL,
-        "isbn"	INTEGER UNIQUE,
+        "isbn"	TEXT UNIQUE,
         "title"	TEXT NOT NULL,
         "subtitle"	TEXT,
         "publisher_id"	INTEGER,
@@ -32,7 +37,7 @@ export async function openDb() {
         "pages"	INTEGER,
         "pub_year"	INTEGER,
         PRIMARY KEY("book_id" AUTOINCREMENT),
-                          FOREIGN KEY("publisher_id") REFERENCES "publisher"("publisher_id") ON DELETE CASCADE ON UPDATE CASCADE
+        FOREIGN KEY("publisher_id") REFERENCES "publisher"("publisher_id") ON DELETE CASCADE ON UPDATE CASCADE
     );
     `);
 
@@ -56,10 +61,13 @@ export async function openDb() {
 
     // Users
     await db.exec(`
-    CREATE TABLE IF NOT EXISTS "users" (
+    CREATE TABLE "users" (
         "id"	INTEGER,
         "email"	TEXT NOT NULL UNIQUE,
         "password"	TEXT NOT NULL,
+        "role"	TEXT,
+        "firstname"	TEXT NOT NULL,
+        "lastname"	TEXT,
         PRIMARY KEY("id" AUTOINCREMENT)
     );
     `);
@@ -110,25 +118,25 @@ export async function openDb() {
         "expiration_date"	NUMERIC NOT NULL,
         "u_id"	INTEGER NOT NULL,
         PRIMARY KEY("cookie_id" AUTOINCREMENT),
-                            FOREIGN KEY("u_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE
+        FOREIGN KEY("u_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE
     );
     `);
 
     //Create Admin User
-    // check existing
-    const existing = await db.get('SELECT id FROM users WHERE email = ?', adminEmail);
-    if (existing) return res.status(200).json({ message: 'Admin already exists', id: existing.id });
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPasswd = process.env.ADMIN_PASSWORD;
 
     // hash password
     const saltRounds = 10;
-    const hash = await bcrypt.hash(adminPassword, saltRounds);
+    const hash = bcrypt.hash(adminPasswd, saltRounds);
 
     // insert as admin
-    const result = await db.exec(
-    'INSERT INTO users (email, password, is_admin) VALUES (?, ?, ?)',
-                                [email, password, 'admin']
+    const result = await db.run(`
+    INSERT INTO "users" (email, password, role, firstname) VALUES (?, ?, ?, 'Admin')`,
+                                [adminEmail, hash, 'admin']
     );
+    console.log(result);
 
 
-    return db;
+
 }
