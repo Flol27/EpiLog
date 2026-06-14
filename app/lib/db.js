@@ -127,16 +127,11 @@ export async function initDb(db) {
     const adminPasswd = process.env.ADMIN_PASSWORD;
 
     // hash password
-    const saltRounds = 10;
-    const hash = bcrypt.hash(adminPasswd, saltRounds);
+    const hash = bcrypt.hash(adminPasswd, process.env.SALT_ROUNDS);
 
     // insert as admin
     const result = await db.run(`
-    INSERT INTO "users" (email, password, role, firstname) VALUES (?, ?, ?, 'Admin')`,
-                                [adminEmail, hash, 'admin']
+    INSERT INTO "users" (email, password, role, firstname) VALUES (?, ?, ?, ?)`,
+                                [adminEmail, hash, 'admin', 'Admin']
     );
-    console.log(result);
-
-
-
 }
