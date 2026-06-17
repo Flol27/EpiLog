@@ -16,9 +16,20 @@ interface FriendModalProps {
 
 export default function FriendModal({ friend, isOpen, onClose }: FriendModalProps) {
   useEffect(() => {
-    if (isOpen) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "unset";
-    return () => { document.body.style.overflow = "unset"; };
+    if (isOpen) {
+      // Berechnet die exakte Breite der Scrollbar
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.paddingRight = "0px";
+      document.body.style.overflow = "unset";
+    }
+    
+    return () => {
+      document.body.style.paddingRight = "0px";
+      document.body.style.overflow = "unset";
+    };
   }, [isOpen]);
 
   if (!isOpen || !friend) return null;

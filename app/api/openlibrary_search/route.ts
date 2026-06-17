@@ -10,22 +10,20 @@ export async function GET(request: Request) {
 
   const trimmedQuery = query.trim();
   
-  // REGEX-CHECK: Besteht die Eingabe nur aus Zahlen und ist zwischen 10 und 13 Zeichen lang?
-  // Wenn ja, ist es höchstwahrscheinlich eine ISBN.
+  // REGEX-CHECK: ISBN erkennen
   const isIsbn = /^[0-9-]{10,17}$/.test(trimmedQuery.replace(/-/g, ''));
 
   let apiUrl = '';
   if (isIsbn) {
-    // Wenn es eine ISBN ist, filtern wir direkt nach dem ISBN-Parameter
     apiUrl = `https://openlibrary.org/search.json?isbn=${encodeURIComponent(trimmedQuery)}`;
   } else {
-    // Ansonsten normale Freitextsuche
     apiUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(trimmedQuery)}`;
   }
 
   try {
+    // 1. NUR EIN EINZIGER FETCH AN DIE API
     const response = await fetch(apiUrl, {
-      next: { revalidate: 0 } // 1 Stunde cachen
+      next: { revalidate: 3600 } // 1 Stunde cachen
     });
 
     if (!response.ok) {
@@ -38,54 +36,46 @@ export async function GET(request: Request) {
       return NextResponse.json([]);
     }
 
-    // Wir limitieren auf die ersten 5 Treffer
-    const books = await Promise.all(data.docs.slice(0, 5).map(async (book: any) => {
-    let displayIsbn = 'Keine ISBN vorhanden';
-    
-    // 1. Dein funktionierender Code für das "ia"-Array
-    if (book.ia && book.ia.length > 0) {
-      const isbnEntry = book.ia.find((id: string) => id.startsWith('isbn_'));
-      if (isbnEntry) {
-        displayIsbn = isbnEntry.replace('isbn_', '');
-      }
-    } 
-    
-    // 2. Fallback auf das normale "isbn"-Array
-    if (displayIsbn === 'Keine ISBN vorhanden' && book.isbn && book.isbn.length > 0) {
-      displayIsbn = book.isbn[0];
-    }
-
-    // 3. DER NEUE RETTER: Fallback über den cover_edition_key
-    // Wenn wir immer noch keine ISBN haben, aber ein konkretes Cover-Edition-Key existiert
-    if (displayIsbn === 'Keine ISBN vorhanden' && book.cover_edition_key) {
-      try {
-        // Wir fragen die spezifische Edition-API ab
-        const editionResponse = await fetch(`https://openlibrary.org/books/${book.cover_edition_key}.json`);
-        if (editionResponse.ok) {
-          const editionData = await editionResponse.json();
-          
-          // Edition-Objekte haben die ISBNs oft in "isbn_13" oder "isbn_10"
-          if (editionData.isbn_13 && editionData.isbn_13.length > 0) {
-            displayIsbn = editionData.isbn_13[0];
-          } else if (editionData.isbn_10 && editionData.isbn_10.length > 0) {
-            displayIsbn = editionData.isbn_10[0];
-          }
+    // 2. Wir schneiden auf solide 50 Treffer zu (Ohne Sub-Requests verkraftet die API das locker!)
+    const books = data.docs.slice(0, 50).map((book: any) => {
+      let displayIsbn = 'Keine ISBN vorhanden';
+      
+      // Suche im "ia"-Array nach "isbn_"
+      if (book.ia && book.ia.length > 0) {
+        const isbnEntry = book.ia.find((id: string) => id.startsWith('isbn_'));
+        if (isbnEntry) {
+          displayIsbn = isbnEntry.replace('isbn_', '');
         }
       } 
-      catch (e) {
-        console.error("Fehler beim Abrufen der Edition-ISBN", e);
+      
+      // Fallback auf das normale "isbn"-Array
+      if (displayIsbn === 'Keine ISBN vorhanden' && book.isbn && book.isbn.length > 0) {
+        displayIsbn = book.isbn[0];
       }
-    }
 
-    return {
-      title: book.title,
-      author: book.author_name?.[0] || 'Unbekannter Autor',
-      isbn: displayIsbn,
-    };
-  }));
+      const publishDate = book.first_publish_year 
+        ? String(book.first_publish_year) 
+        : 'Unbekanntes Veröffentlichungsdatum';
+
+      let genres = ['Kein Genre angegeben'];
+      if (book.subject && book.subject.length > 0) {
+        // .slice(0, 3) nimmt nur die ersten drei Einträge, damit die Liste nicht zu lang wird
+        genres = book.subject.slice(0, 3);
+      }
+
+      return {
+        title: book.title,
+        author: book.author_name?.[0] || 'Unbekannter Autor',
+        isbn: displayIsbn,
+        publishDate: publishDate,
+        coverKey: book.cover_edition_key || null,
+        genres: genres.join(', ')
+      };
+    });
 
     return NextResponse.json(books);
   } catch (error) {
+    console.error("API Error:", error);
     return NextResponse.json({ error: 'Interner Server-Fehler' }, { status: 500 });
   }
 }
