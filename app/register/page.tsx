@@ -12,18 +12,18 @@ export default function Register() {
           </div>
         </div>
         
-        <h1 className="text-2xl font-bold text-white tracking-tight">Konto erstellen</h1>
-        <p className="text-zinc-400">Hier können sich Nutzer bald registrieren.</p>
+        <h1 className="text-2xl font-bold text-white tracking-tight">Create an account</h1>
+        <p className="text-zinc-400">Users will be able to register here soon.</p>
 
         <div className="mt-4 p-4 border border-zinc-800 bg-zinc-900 rounded-xl text-zinc-500 text-sm">
-          Mockup-Hinweis: Die Registrierung ist noch in Entwicklung.
+          Mockup Note: Registration is still under development.
         </div>
 
         <Link 
           href="/login" 
           className="w-full bg-zinc-800 text-white font-medium py-3 rounded-xl hover:bg-zinc-700 transition-colors mt-4"
         >
-          Zurück zum Login
+          Back to Login
         </Link>
       </div>
     </div>

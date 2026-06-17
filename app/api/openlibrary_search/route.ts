@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 
   try {
     const response = await fetch(apiUrl, {
-      next: { revalidate: 0 } // 1 Stunde cachen
+      next: { revalidate: 3600 } // 1 Stunde cachen
     });
 
     if (!response.ok) {

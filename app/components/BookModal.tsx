@@ -4,9 +4,15 @@ import { useEffect } from "react";
 import { X, Star, User, Plus } from "lucide-react";
 import { mockReviews } from "../lib/data";
 
-// Typisierung für Typescript
 interface Book {
-  id: string; title: string; author: string; year: number; genre: string; cover: string; description: string;
+  id: string; 
+  title: string; 
+  author: string; 
+  year: number | string; 
+  genre: string; 
+  cover: string; 
+  coverUrl?: string; // NEU: Für echte Bilder
+  description: string;
 }
 
 interface BookModalProps {
@@ -16,15 +22,17 @@ interface BookModalProps {
 }
 
 export default function BookModal({ book, isOpen, onClose }: BookModalProps) {
-  // Verhindert das Scrollen im Hintergrund
   useEffect(() => {
     if (isOpen) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
       document.body.style.overflow = "hidden";
     } else {
+      document.body.style.paddingRight = "0px";
       document.body.style.overflow = "unset";
     }
-    // Cleanup, wenn die Komponente unmounted wird
     return () => {
+      document.body.style.paddingRight = "0px";
       document.body.style.overflow = "unset";
     };
   }, [isOpen]);
@@ -32,22 +40,23 @@ export default function BookModal({ book, isOpen, onClose }: BookModalProps) {
   if (!isOpen || !book) return null;
 
   return (
-    // Das Overlay (dunkler Hintergrund). onClick schließt das Modal beim Klicken außerhalb.
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-      onClick={onClose} 
-    >
-      {/* Der eigentliche Modal-Container. e.stopPropagation() verhindert, dass Klicks hier drin das Modal schließen */}
-      <div 
-        className="bg-[#121214] border border-zinc-800 rounded-3xl p-6 md:p-10 w-full max-w-3xl max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-[#121214] border border-zinc-800 rounded-3xl p-6 md:p-10 w-full max-w-3xl max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+        
         <button onClick={onClose} className="absolute top-6 right-6 text-zinc-400 hover:text-white transition-colors bg-zinc-900 p-2 rounded-full">
           <X className="w-5 h-5" />
         </button>
 
         <div className="flex flex-col md:flex-row gap-8 items-start mt-4">
-          <div className={`w-40 md:w-56 aspect-[2/3] shrink-0 ${book.cover} rounded-2xl shadow-xl border border-zinc-800`}></div>
+          
+          {/* Dynamische Cover-Anzeige: Bild oder Farbe */}
+          <div className={`w-40 md:w-56 aspect-[2/3] shrink-0 rounded-2xl shadow-xl border border-zinc-800 overflow-hidden ${!book.coverUrl ? book.cover : 'bg-zinc-900'}`}>
+            {book.coverUrl ? (
+              <img src={book.coverUrl} alt={book.title} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-zinc-500 text-sm">No Cover</div>
+            )}
+          </div>
           
           <div className="flex flex-col gap-4 w-full">
             <div>
