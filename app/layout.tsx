@@ -17,12 +17,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de" className="dark">
-      <body className={`${inter.className} bg-[#09090b] text-zinc-50 antialiased overflow-y-scroll`}>
-        {/* Globaler Container für alle Seiten */}
-        <div className="min-h-screen flex flex-col p-4 md:p-8 max-w-7xl mx-auto gap-8">
-          <Navbar />
-          {children}
+      {/* Wir entfernen die Farben aus dem Body, behalten aber den Scroll-Fix */}
+      <body className={`${inter.className} antialiased overflow-y-scroll`}>
+        
+        {/* NEU: Dieser Container zwingt die gesamte Seite absolut zuverlässig in den Dark Mode */}
+        <div className="min-h-screen bg-[#09090b] text-zinc-50 w-full">
+          
+          {/* Dein altes Layout-Grid */}
+          <div className="flex flex-col p-4 md:p-8 max-w-7xl mx-auto gap-8">
+            <Navbar />
+            {children}
+          </div>
+          
         </div>
+        
       </body>
     </html>
   );
