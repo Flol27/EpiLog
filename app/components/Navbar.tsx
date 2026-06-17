@@ -17,7 +17,7 @@ export default function Navbar() {
 
   // Eine saubere Liste eurer Links
   const navLinks = [
-    { name: "Dashboard", href: "/", icon: Home },
+    { name: "Dashboard", href: "/dashboard", icon: Home },
     { name: "My Shelf", href: "/shelf", icon: Library },
     { name: "Activity", href: "/activity", icon: Activity },
     { name: "Search", href: "/search", icon: Search },

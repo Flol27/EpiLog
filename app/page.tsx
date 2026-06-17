@@ -1,85 +1,90 @@
-import { 
-  BookOpen, 
-  Home, 
-  Library, 
-  Activity, 
-  Search, 
-  ScanLine, 
-  LogOut, 
-  Zap, 
-  ArrowRight 
-} from "lucide-react";
+"use client";
+
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { BookOpen, Users, Compass, ArrowRight, TrendingUp } from "lucide-react";
 
-export default function Dashboard() {
+export default function LandingPage() {
+  const router = useRouter();
+
+  // Kleine Quality-of-Life-Funktion: 
+  // Wenn der Nutzer schon (Fake-)eingeloggt ist, leiten wir ihn direkt zum Dashboard weiter.
+  useEffect(() => {
+    if (localStorage.getItem("isLoggedIn") === "true") {
+      router.push("/dashboard");
+    }
+  }, [router]);
+
   return (
-    <div className="w-full">
-      <main className="flex flex-col gap-6 w-full">
-        {/* Welcome Section */}
-        <section className="bg-[#121214] rounded-3xl p-8 border border-zinc-800/50">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Welcome back, <span className="text-yellow-400">Alex</span>
-          </h1>
-          <div className="flex items-center gap-2 text-zinc-400 text-lg">
-            <Zap className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-            <p>You're on a <span className="text-yellow-400 font-semibold">15-day</span> reading streak!</p>
+    <div className="flex flex-col items-center justify-center min-h-[85vh] gap-16 py-10 w-full animate-in fade-in duration-1000">
+      
+      {/* Hero Section */}
+      <div className="text-center flex flex-col items-center gap-6 max-w-3xl px-4">
+        <div className="flex items-center gap-3 bg-yellow-400/10 text-yellow-400 px-4 py-2 rounded-full border border-yellow-400/20 mb-4 cursor-default hover:bg-yellow-400/20 transition-colors">
+          <BookOpen className="w-5 h-5" />
+          <span className="font-semibold tracking-wide">EpiLog – Dein digitales Bücherregal</span>
+        </div>
+        
+        <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tight leading-tight">
+          Lese-Fortschritte <br className="hidden md:block"/> 
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">
+            neu erleben.
+          </span>
+        </h1>
+        
+        <p className="text-lg md:text-xl text-zinc-400 max-w-2xl mt-2 leading-relaxed">
+          Dokumentiere jedes gelesene Kapitel, teile deine Erfolge mit Freunden und finde durch unseren Algorithmus dein nächstes Lieblingsbuch.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-4 mt-6">
+          <Link href="/register" className="flex items-center justify-center gap-2 bg-yellow-400 text-black font-bold text-lg px-8 py-4 rounded-xl hover:bg-yellow-500 hover:scale-105 transition-all duration-300">
+            Kostenlos starten <ArrowRight className="w-5 h-5" />
+          </Link>
+          <Link href="/login" className="flex items-center justify-center gap-2 bg-zinc-900 border border-zinc-700 text-white font-semibold text-lg px-8 py-4 rounded-xl hover:bg-zinc-800 transition-all duration-300">
+            Zum Login
+          </Link>
+        </div>
+      </div>
+
+      {/* Feature Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-10 px-4">
+        
+        {/* Feature 1: Tracking */}
+        <div className="bg-[#121214] p-8 rounded-3xl border border-zinc-800/50 hover:border-yellow-400/50 hover:-translate-y-2 transition-all duration-300 group">
+          <div className="bg-zinc-900 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-yellow-400/10 transition-colors">
+            <TrendingUp className="w-7 h-7 text-zinc-300 group-hover:text-yellow-400 transition-colors" />
           </div>
-        </section>
+          <h3 className="text-xl font-bold text-white mb-3">Fortschritte tracken</h3>
+          <p className="text-zinc-400 leading-relaxed">
+            Egal ob Seiten, Kapitel oder Hörbuch-Minuten. Behalte deine Leseziele im Blick und bau dir eine Streak auf, die dich motiviert.
+          </p>
+        </div>
 
-        {/* Stats Grid */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          <StatCard number="12" label="Books in 2026" />
-          <StatCard number="4,234" label="Pages Read" />
-          <StatCard number="4.3" label="Avg Rating" />
-          <StatCard number="15" label="Day Streak" />
-        </section>
-
-        {/* Bottom Modules */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
-          {/* Currently Reading */}
-          <div className="bg-[#121214] rounded-3xl p-8 border border-zinc-800/50 flex flex-col">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-bold">Currently Reading</h2>
-              <button className="text-yellow-400 hover:text-yellow-300 flex items-center gap-1 text-sm font-medium transition-colors">
-                View all <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="flex gap-6 items-center">
-              <div className="w-24 h-36 bg-zinc-800 rounded-lg shadow-xl shrink-0 border border-zinc-700"></div>
-              <div>
-                <h3 className="text-xl font-bold text-white mb-2">The Kite Runner</h3>
-                <p className="text-zinc-400">Khaled Hosseini</p>
-              </div>
-            </div>
+        {/* Feature 2: Social */}
+        <div className="bg-[#121214] p-8 rounded-3xl border border-zinc-800/50 hover:border-yellow-400/50 hover:-translate-y-2 transition-all duration-300 group">
+          <div className="bg-zinc-900 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-yellow-400/10 transition-colors">
+            <Users className="w-7 h-7 text-zinc-300 group-hover:text-yellow-400 transition-colors" />
           </div>
+          <h3 className="text-xl font-bold text-white mb-3">Mit Freunden teilen</h3>
+          <p className="text-zinc-400 leading-relaxed">
+            Vernetze dich! Sende Freundschaftsanfragen und sieh in deinem Feed live, wenn <em>"Hans Dune beendet hat"</em>. Tauscht euch über Reviews aus.
+          </p>
+        </div>
 
-          {/* Activity Chart Placeholder */}
-          <div className="bg-[#121214] rounded-3xl p-8 border border-zinc-800/50 flex flex-col">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-bold">Monthly Reading Activity</h2>
-            </div>
-            <div className="flex-1 flex items-end gap-2 h-32 mt-auto">
-              {/* Simple CSS Bars mimicking a chart */}
-              <div className="w-full bg-yellow-400/20 h-1/4 rounded-t-md hover:bg-yellow-400 transition-colors"></div>
-              <div className="w-full bg-yellow-400 h-full rounded-t-md"></div>
-              <div className="w-full bg-yellow-400/20 h-1/2 rounded-t-md hover:bg-yellow-400 transition-colors"></div>
-              <div className="w-full bg-yellow-400/20 h-3/4 rounded-t-md hover:bg-yellow-400 transition-colors"></div>
-              <div className="w-full bg-yellow-400/20 h-1/3 rounded-t-md hover:bg-yellow-400 transition-colors"></div>
-            </div>
+        {/* Feature 3: Discover (Ausblick) */}
+        <div className="bg-[#121214] p-8 rounded-3xl border border-zinc-800/50 hover:border-yellow-400/50 hover:-translate-y-2 transition-all duration-300 group relative overflow-hidden">
+          <div className="absolute top-4 right-4 bg-yellow-400/20 text-yellow-400 text-xs font-bold px-3 py-1 rounded-full">In Kürze</div>
+          <div className="bg-zinc-900 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-yellow-400/10 transition-colors">
+            <Compass className="w-7 h-7 text-zinc-300 group-hover:text-yellow-400 transition-colors" />
           </div>
-        </section>
+          <h3 className="text-xl font-bold text-white mb-3">Neues Entdecken</h3>
+          <p className="text-zinc-400 leading-relaxed">
+            Bist du bereit für Neues? Unser Algorithmus analysiert deinen Geschmack und schlägt dir passgenaue Bücher vor, die du lieben wirst.
+          </p>
+        </div>
 
-      </main>
-    </div>
-  );
-}
-
-// Eine kleine Hilfs-Komponente für die 4 Statistik-Karten, damit der Code sauber bleibt
-function StatCard({ number, label }: { number: string; label: string }) {
-  return (
-    <div className="bg-[#121214] rounded-3xl p-6 border border-zinc-800/50 flex flex-col justify-center gap-1 hover:border-zinc-700 transition-colors">
-      <span className="text-3xl md:text-4xl font-bold text-white">{number}</span>
-      <span className="text-zinc-400 text-sm md:text-base">{label}</span>
+      </div>
     </div>
   );
 }
