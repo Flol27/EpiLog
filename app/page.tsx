@@ -1,85 +1,101 @@
-import { 
-  BookOpen, 
-  Home, 
-  Library, 
-  Activity, 
-  Search, 
-  ScanLine, 
-  LogOut, 
-  Zap, 
-  ArrowRight 
-} from "lucide-react";
+"use client";
+
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { BookOpen, Users, Compass, ArrowRight, TrendingUp, Star, Sparkles } from "lucide-react";
 
-export default function Dashboard() {
+export default function LandingPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    if (localStorage.getItem("isLoggedIn") === "true") {
+      router.push("/dashboard");
+    }
+  }, [router]);
+
   return (
-    <div className="w-full">
-      <main className="flex flex-col gap-6 w-full">
-        {/* Welcome Section */}
-        <section className="bg-[#121214] rounded-3xl p-8 border border-zinc-800/50">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Welcome back, <span className="text-yellow-400">Alex</span>
+    <>
+      <div 
+        className="fixed inset-0 z-[-1] bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2560&auto=format&fit=crop")' }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-[#09090b]/80 via-[#09090b]/95 to-zinc-950"></div>
+      </div>
+
+      <div className="flex flex-col items-center min-h-screen pb-20 w-full">
+        
+        <div className="flex items-center gap-3 text-yellow-400 mt-4 mb-16 hover:scale-105 transition-transform duration-500 cursor-default">
+          <BookOpen className="w-10 h-10" />
+          <span className="font-bold text-3xl tracking-tight text-white">EpiLog</span>
+        </div>
+
+        <div className="text-center flex flex-col items-center gap-6 max-w-4xl px-4">
+          
+          <div className="flex items-center gap-3 bg-yellow-400/10 text-yellow-400 px-5 py-2.5 rounded-full border border-yellow-400/20 mb-2 cursor-default hover:bg-yellow-400/20 hover:border-yellow-400/40 transition-all duration-300 shadow-[0_0_15px_rgba(250,204,21,0.1)]">
+            <Sparkles className="w-4 h-4" />
+            <span className="font-semibold tracking-wide text-sm uppercase">Your digital bookshelf</span>
+            <Sparkles className="w-4 h-4" />
+          </div>
+          
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tight leading-tight">
+            Experience your reading journey <br className="hidden md:block"/> 
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">
+              like never before.
+            </span>
           </h1>
-          <div className="flex items-center gap-2 text-zinc-400 text-lg">
-            <Zap className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-            <p>You're on a <span className="text-yellow-400 font-semibold">15-day</span> reading streak!</p>
+          
+          <p className="text-lg md:text-xl text-zinc-300 max-w-2xl mt-4 leading-relaxed font-light">
+            EpiLog is more than just a tracker. Document every chapter, rate your favorites, share milestones with friends, and let our smart algorithm find the book you won't be able to put down next.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 mt-8">
+            <Link href="/register" className="flex items-center justify-center gap-2 bg-yellow-400 text-black font-bold text-lg px-8 py-4 rounded-xl hover:bg-yellow-500 hover:scale-105 hover:shadow-[0_0_20px_rgba(250,204,21,0.3)] transition-all duration-300">
+              Start for free <ArrowRight className="w-5 h-5" />
+            </Link>
+            <Link href="/login" className="flex items-center justify-center gap-2 bg-zinc-900/80 backdrop-blur-sm border border-zinc-700 text-white font-semibold text-lg px-8 py-4 rounded-xl hover:bg-zinc-800 transition-all duration-300">
+              Go to Login
+            </Link>
           </div>
-        </section>
+        </div>
 
-        {/* Stats Grid */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          <StatCard number="12" label="Books in 2026" />
-          <StatCard number="4,234" label="Pages Read" />
-          <StatCard number="4.3" label="Avg Rating" />
-          <StatCard number="15" label="Day Streak" />
-        </section>
+        <div className="w-full max-w-3xl h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent my-20"></div>
 
-        {/* Bottom Modules */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
-          {/* Currently Reading */}
-          <div className="bg-[#121214] rounded-3xl p-8 border border-zinc-800/50 flex flex-col">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-bold">Currently Reading</h2>
-              <button className="text-yellow-400 hover:text-yellow-300 flex items-center gap-1 text-sm font-medium transition-colors">
-                View all <ArrowRight className="w-4 h-4" />
-              </button>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full px-4 max-w-6xl">
+          
+          <div className="bg-zinc-900/50 backdrop-blur-md p-8 rounded-3xl border border-zinc-800 hover:border-yellow-400/50 hover:-translate-y-3 hover:shadow-2xl hover:shadow-yellow-400/5 transition-all duration-300 group">
+            <div className="bg-zinc-800 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-yellow-400/20 group-hover:scale-110 transition-all duration-300">
+              <TrendingUp className="w-7 h-7 text-zinc-300 group-hover:text-yellow-400 transition-colors" />
             </div>
-            <div className="flex gap-6 items-center">
-              <div className="w-24 h-36 bg-zinc-800 rounded-lg shadow-xl shrink-0 border border-zinc-700"></div>
-              <div>
-                <h3 className="text-xl font-bold text-white mb-2">The Kite Runner</h3>
-                <p className="text-zinc-400">Khaled Hosseini</p>
-              </div>
-            </div>
+            <h3 className="text-xl font-bold text-white mb-3">Goals & Stats</h3>
+            <p className="text-zinc-400 leading-relaxed text-sm">
+              Whether it's pages, chapters, or audiobook minutes. Keep an eye on your reading goals, analyze your habits, and build a streak that motivates you daily.
+            </p>
           </div>
 
-          {/* Activity Chart Placeholder */}
-          <div className="bg-[#121214] rounded-3xl p-8 border border-zinc-800/50 flex flex-col">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-bold">Monthly Reading Activity</h2>
+          <div className="bg-zinc-900/50 backdrop-blur-md p-8 rounded-3xl border border-zinc-800 hover:border-yellow-400/50 hover:-translate-y-3 hover:shadow-2xl hover:shadow-yellow-400/5 transition-all duration-300 group">
+            <div className="bg-zinc-800 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-yellow-400/20 group-hover:scale-110 transition-all duration-300">
+              <Users className="w-7 h-7 text-zinc-300 group-hover:text-yellow-400 transition-colors" />
             </div>
-            <div className="flex-1 flex items-end gap-2 h-32 mt-auto">
-              {/* Simple CSS Bars mimicking a chart */}
-              <div className="w-full bg-yellow-400/20 h-1/4 rounded-t-md hover:bg-yellow-400 transition-colors"></div>
-              <div className="w-full bg-yellow-400 h-full rounded-t-md"></div>
-              <div className="w-full bg-yellow-400/20 h-1/2 rounded-t-md hover:bg-yellow-400 transition-colors"></div>
-              <div className="w-full bg-yellow-400/20 h-3/4 rounded-t-md hover:bg-yellow-400 transition-colors"></div>
-              <div className="w-full bg-yellow-400/20 h-1/3 rounded-t-md hover:bg-yellow-400 transition-colors"></div>
-            </div>
+            <h3 className="text-xl font-bold text-white mb-3">Community</h3>
+            <p className="text-zinc-400 leading-relaxed text-sm">
+              Connect with other readers! Send friend requests and see live updates in your feed when <em>"Alex finishes The Martian"</em>. Exchange thoughts on reviews.
+            </p>
           </div>
-        </section>
 
-      </main>
-    </div>
-  );
-}
+          <div className="bg-zinc-900/50 backdrop-blur-md p-8 rounded-3xl border border-zinc-800 hover:border-yellow-400/50 hover:-translate-y-3 hover:shadow-2xl hover:shadow-yellow-400/5 transition-all duration-300 group relative overflow-hidden">
+            <div className="absolute top-4 right-4 bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 text-xs font-bold px-3 py-1 rounded-full">Coming Soon</div>
+            <div className="bg-zinc-800 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-yellow-400/20 group-hover:scale-110 transition-all duration-300">
+              <Compass className="w-7 h-7 text-zinc-300 group-hover:text-yellow-400 transition-colors" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-3">Smart Discoveries</h3>
+            <p className="text-zinc-400 leading-relaxed text-sm">
+              Ready for something new? Our intelligent algorithm analyzes your taste and suggests perfectly matched books that you will love.
+            </p>
+          </div>
 
-// Eine kleine Hilfs-Komponente für die 4 Statistik-Karten, damit der Code sauber bleibt
-function StatCard({ number, label }: { number: string; label: string }) {
-  return (
-    <div className="bg-[#121214] rounded-3xl p-6 border border-zinc-800/50 flex flex-col justify-center gap-1 hover:border-zinc-700 transition-colors">
-      <span className="text-3xl md:text-4xl font-bold text-white">{number}</span>
-      <span className="text-zinc-400 text-sm md:text-base">{label}</span>
-    </div>
+        </div>
+      </div>
+    </>
   );
 }
