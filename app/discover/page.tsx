@@ -5,10 +5,21 @@ import { Compass, Search } from "lucide-react";
 import { mockBooks } from "../lib/data";
 import BookModal from "../components/BookModal";
 
+interface Book {
+  title: string;
+  author: string;
+  isbn: string;
+}
+
 export default function Discover() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBook, setSelectedBook] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [query, setQuery] = useState("");      
+  const [books, setBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(false); 
+  const [error, setError] = useState("");
 
   // Gefilterte Bücher für die Suche
   const searchResults = mockBooks.filter(book => 
@@ -21,6 +32,30 @@ export default function Discover() {
     setIsModalOpen(true);
   };
 
+  // Die Suchfunktion für die OpenLibrary API
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(`/api/openlibrary_search?q=${encodeURIComponent(query)}`);
+      
+      if (!response.ok) {
+        throw new Error("Fehler beim Abrufen der Bücher");
+      }
+
+      const data = await response.json();
+      setBooks(data); 
+    } catch (err) {
+      setError("Etwas ist schiefgelaufen. Bitte versuche es erneut.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-10 w-full animate-in fade-in duration-500">
       
@@ -30,14 +65,25 @@ export default function Discover() {
           <Compass className="text-yellow-400 w-8 h-8"/> Discover
         </h1>
         <div className="relative w-full shadow-lg">
-          <Search className="absolute left-4 top-3.5 w-5 h-5 text-zinc-500" />
-          <input
-            type="text"
-            placeholder="Search all books by title or author..."
-            className="w-full bg-[#121214] border border-zinc-800 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-yellow-400 transition-colors"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <form onSubmit={handleSearch} className="w-full relative flex items-center">
+            <Search className="absolute left-4 top-3.5 w-5 h-5 text-zinc-500 pointer-events-none" />
+            
+            <input
+              type="text"
+              placeholder="Search all books by title or author..."
+              className="w-full bg-[#121214] border border-zinc-800 rounded-xl py-3 pl-12 pr-24 text-white focus:outline-none focus:border-yellow-400 transition-colors"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+            
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="absolute right-2 px-4 py-1.5 bg-yellow-400 hover:bg-yellow-300 disabled:bg-zinc-700 text-zinc-900 font-medium rounded-lg text-sm transition-colors cursor-pointer"
+            >
+              {loading ? "Sucht..." : "Suchen"}
+            </button>
+          </form>
         </div>
       </div>
 
