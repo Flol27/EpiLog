@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Navbar from "./components/Navbar";
 
-// Hier definieren wir 'inter', damit wir es unten nutzen können
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -17,9 +17,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de" className="dark">
-      {/* Jetzt kennt Next.js die Variable inter */}
-      <body className={`${inter.className} bg-[#09090b] text-zinc-50 antialiased`}>
-        {children}
+      <body className={`${inter.className} bg-[#09090b] text-zinc-50 antialiased overflow-y-scroll`}>
+        {/* Globaler Container für alle Seiten */}
+        <div className="min-h-screen flex flex-col p-4 md:p-8 max-w-7xl mx-auto gap-8">
+          <Navbar />
+          {children}
+        </div>
       </body>
     </html>
   );

@@ -9,61 +9,11 @@ import {
   Zap, 
   ArrowRight 
 } from "lucide-react";
+import Link from "next/link";
 
 export default function Dashboard() {
   return (
-    <div className="min-h-screen flex flex-col p-4 md:p-8 max-w-7xl mx-auto gap-8">
-      
-      {/* Navbar */}
-      <nav className="flex items-center justify-between w-full">
-        {/* Logo */}
-        <div className="flex items-center gap-2 text-yellow-400">
-          <BookOpen className="w-8 h-8" />
-          <span className="font-bold text-2xl tracking-tight text-white">EpiLog</span>
-        </div>
-
-        {/* Center Links */}
-        <div className="hidden md:flex items-center gap-6 text-zinc-400 font-medium">
-          <button className="flex items-center gap-2 text-yellow-400 border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 rounded-xl">
-            <Home className="w-4 h-4" />
-            Dashboard
-          </button>
-          <button className="flex items-center gap-2 hover:text-white transition-colors">
-            <Library className="w-4 h-4" />
-            My Shelf
-          </button>
-          <button className="flex items-center gap-2 hover:text-white transition-colors">
-            <Activity className="w-4 h-4" />
-            Activity
-          </button>
-          <button className="flex items-center gap-2 hover:text-white transition-colors">
-            <Search className="w-4 h-4" />
-            Search
-          </button>
-        </div>
-
-        {/* Right Actions */}
-        <div className="flex items-center gap-6">
-          <button className="flex items-center gap-2 bg-yellow-400 text-black font-semibold px-5 py-2.5 rounded-xl hover:bg-yellow-500 transition-colors">
-            <ScanLine className="w-5 h-5" />
-            Scan ISBN
-          </button>
-          
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-zinc-700 flex items-center justify-center overflow-hidden">
-              {/* Platzhalter für Profilbild */}
-              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="Profile" className="w-full h-full object-cover" />
-            </div>
-            <div className="hidden lg:block text-sm">
-              <p className="text-white font-medium">Alex Thompson</p>
-            </div>
-            <button className="text-zinc-400 hover:text-white ml-2">
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </nav>
-
+    <div className="w-full">
       <main className="flex flex-col gap-6 w-full">
         {/* Welcome Section */}
         <section className="bg-[#121214] rounded-3xl p-8 border border-zinc-800/50">
