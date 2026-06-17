@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { X, Star, User, Plus } from "lucide-react";
 import { mockReviews } from "../lib/data";
 
@@ -15,6 +16,19 @@ interface BookModalProps {
 }
 
 export default function BookModal({ book, isOpen, onClose }: BookModalProps) {
+  // Verhindert das Scrollen im Hintergrund
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    // Cleanup, wenn die Komponente unmounted wird
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
   if (!isOpen || !book) return null;
 
   return (
