@@ -41,11 +41,11 @@ export default function Discover() {
             id: `api-${index}`,
             title: b.title,
             author: b.author,
-            year: 'Unknown',
-            genre: 'Search Result',
+            year: b.publishDate,
+            genre: b.genres,
             // Wenn es eine ISBN gibt, holen wir das Bild. Sonst Platzhalter-Style.
             coverUrl: b.isbn !== 'Keine ISBN vorhanden' 
-              ? `https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg` 
+              ? `https://covers.openlibrary.org/b/olid/${b.coverKey}-L.jpg` 
               : null,
             cover: 'bg-zinc-800', 
             description: 'Description not available in preview.',
