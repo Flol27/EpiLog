@@ -1,25 +1,17 @@
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcrypt';
+import * as argon2 from 'argon2';
 import { openDb } from '@/app/lib/db';
+import { authorized } from '@/app/lib/auth';
+import * as response from '@/app/lib/response';
+
 
 export async function GET() {
     try {
 
-        // // 2. Cookie abfragen
-        // const cookieStore = await cookies();
-        // const sessionCookie = cookieStore.get('session_user_id');
-        //
-        // // 3. Wenn das Cookie nicht existiert -> Zugriff verweigern
-        // if (!sessionCookie) {
-        //     return NextResponse.json(
-        //         { error: 'Nicht autorisiert. Bitte zuerst einloggen.' },
-        //         { status: 401 }
-        //     );
-        // }
+        if (!authorized('admin')) {return response.NOTAUTHORIZED;}
 
-        // 4. Wenn das Cookie da ist -> Datenbank abfragen
-        const db = await openDb(process.env.DB);
-        const users = await db.all('SELECT id, email, firstname, lastname FROM users'); // Passwort hier weglassen!
+        const db = await openDb();
+        const users = await db.prepare('SELECT id, email, firstname, lastname FROM users').all(); // Passwort hier weglassen!
 
         return NextResponse.json(users, { status: 200 });
 
@@ -35,44 +27,36 @@ export async function GET() {
 
 export async function POST(request) {
     try {
-        // 1. Daten aus dem Request auslesen
 
-        console.log(request);
+        if (!authorized('admin')) {return response.NOTAUTHORIZED;}
 
-        const { email, password } = await request.json();
 
-        console.log(email);
-
-        if (!email || !password) {
+        const { email, password, firstname } = await request.json();
+        if (!email || !password || !firstname) {
             return NextResponse.json(
-                { error: 'E-Mail und Passwort sind erforderlich' },
+                { error: 'E-Mail, Passwort und Name sind erforderlich' },
                 { status: 400 }
             );
         }
 
+        const hash = await argon2.hash(password); // '+' für schnelle umwandlung in Int
+
         const db = await openDb();
+        const result = db.prepare('INSERT INTO users (email, password, firstname) VALUES (?, ?, ?)').run(email, hash, firstname);
 
-        // 2. Passwort verschlüsseln (Salting & Hashing)
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-        // 3. Nutzer in die SQLite-Datenbank einfügen
-        const result = await db.run(
-            'INSERT INTO users (email, password) VALUES (?, ?)',
-                                    [email, hashedPassword]
-        );
-
-        // 4. Erfolgsmeldung zurückgeben
         return NextResponse.json(
-            { message: 'Nutzer erfolgreich angelegt', id: result.lastID },
+            {
+                message: 'Nutzer erfolgreich angelegt',
+                id: result.lastID
+            },
             { status: 201 }
         );
 
     } catch (error) {
-        // Falls z.B. die E-Mail schon existiert (wenn Spalte UNIQUE ist)
         return NextResponse.json(
-            { error: 'Fehler beim Erstellen des Nutzers',
-              message: error.message
+            {
+                error: 'Fehler beim Erstellen des Nutzers',
+                message: error.message
             },
             { status: 500 }
         );

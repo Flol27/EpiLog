@@ -1,23 +1,34 @@
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
-import fs from 'fs';
-import bcrypt from 'bcrypt';
+import Database from 'better-sqlite3';  // SQL
+import fs from 'fs';                    // Check if File exists
+import * as argon2 from 'argon2';       // password hashing
+
+let db; // My Database
+export async function openDb() {
+
+    if(db) return db;
+
+    const dbPath = process.env.DB;
+    const dbExists = fs.existsSync(dbPath);
 
 
-export async function openDb(path) {
-    const exists = fs.existsSync(path);
-    const db = await open({filename: path, driver: sqlite3.Database});
+    // Development-Modus (Hot Reload Schutz)
+    if (process.env.NODE_ENV === 'development' && !global._sqliteDB) {
+        global._sqliteDB = dbExists ? new Database(dbPath) : initDb(dbPath);
+    }
+    else{
+        db = dbExists ? new Database(dbPath) : initDb(dbPath);
+        return db;
+    }
+    db = global._sqliteDB;
 
-    // AI said ...
-    await db.exec('PRAGMA foreign_keys = ON;');
-
-    if(!exists){await initDb(db);} //Init DB
     return db;
 }
-export async function initDb(db) {
+
+async function initDb(dbPath) {
+    const db = new Database(dbPath);
 
     // Authors
-    await db.exec(`
+    db.exec(`
     CREATE TABLE IF NOT EXISTS "authors" (
         "author_id"	INTEGER,
         "name"	TEXT,
@@ -26,12 +37,13 @@ export async function initDb(db) {
     `);
 
     // Books
-    await db.exec(`
+    db.exec(`
     CREATE TABLE "books" (
         "book_id"	INTEGER NOT NULL,
         "isbn"	TEXT UNIQUE,
         "title"	TEXT NOT NULL,
         "subtitle"	TEXT,
+        "description" TEXT,
         "publisher_id"	INTEGER,
         "picture"	TEXT,
         "pages"	INTEGER,
@@ -42,7 +54,7 @@ export async function initDb(db) {
     `);
 
     // Genres
-    await db.exec(`
+    db.exec(`
     CREATE TABLE IF NOT EXISTS "genres" (
         "genre_id"	INTEGER NOT NULL,
         "name"	TEXT NOT NULL UNIQUE,
@@ -51,7 +63,7 @@ export async function initDb(db) {
     `);
 
     // Publisher
-    await db.exec(`
+    db.exec(`
     CREATE TABLE IF NOT EXISTS "publisher" (
         "publisher_id"	INTEGER NOT NULL,
         "name"	INTEGER,
@@ -60,7 +72,7 @@ export async function initDb(db) {
     `);
 
     // Users
-    await db.exec(`
+    db.exec(`
     CREATE TABLE "users" (
         "id"	INTEGER,
         "email"	TEXT NOT NULL UNIQUE,
@@ -73,7 +85,7 @@ export async function initDb(db) {
     `);
 
     // book-author
-    await db.exec(`
+    db.exec(`
     CREATE TABLE IF NOT EXISTS "book_author" (
         "b_id"	INTEGER NOT NULL,
         "a_id"	INTEGER NOT NULL,
@@ -84,7 +96,7 @@ export async function initDb(db) {
     `);
 
     // book-genre
-    await db.exec(`
+    db.exec(`
     CREATE TABLE IF NOT EXISTS "book_genres" (
         "b_id"	INTEGER NOT NULL,
         "g_id"	INTEGER NOT NULL,
@@ -95,7 +107,7 @@ export async function initDb(db) {
     `);
 
     // reads (book-user)
-    await db.exec(`
+    db.exec(`
     CREATE TABLE IF NOT EXISTS "reads" (
         "u_id"	INTEGER NOT NULL,
         "b_id"	INTEGER NOT NULL,
@@ -111,7 +123,7 @@ export async function initDb(db) {
     `);
 
     // Session
-    await db.exec(`
+    db.exec(`
     CREATE TABLE IF NOT EXISTS "session" (
         "cookie_id"	INTEGER,
         "token"	TEXT NOT NULL,
@@ -124,14 +136,11 @@ export async function initDb(db) {
 
     //Create Admin User
     const adminEmail = process.env.ADMIN_EMAIL;
-    const adminPasswd = process.env.ADMIN_PASSWORD;
-
-    // hash password
-    const hash = bcrypt.hash(adminPasswd, process.env.SALT_ROUNDS);
+    const adminPasswd = await argon2.hash(process.env.ADMIN_PASSWORD);
 
     // insert as admin
-    const result = await db.run(`
-    INSERT INTO "users" (email, password, role, firstname) VALUES (?, ?, ?, ?)`,
-                                [adminEmail, hash, 'admin', 'Admin']
-    );
+    const insert = db.prepare(`INSERT INTO "users" (email, password, role, firstname) VALUES (?, ?, ?, ?)`);
+    insert.run(adminEmail, adminPasswd, 'admin', 'Admin');
+
+    return db;
 }
