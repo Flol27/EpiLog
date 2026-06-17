@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { 
   BookOpen, 
   Home, 
@@ -9,13 +10,31 @@ import {
   Activity, 
   Search, 
   ScanLine, 
-  LogOut 
+  LogOut,
+  LogIn
 } from "lucide-react";
 
 export default function Navbar() {
-  const pathname = usePathname(); // Liest die aktuelle URL aus
+  const pathname = usePathname();
+  const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Eine saubere Liste eurer Links
+  // Prüft den Mockup-Login-Status im Browser
+  useEffect(() => {
+    setMounted(true);
+    const loggedInState = localStorage.getItem("isLoggedIn");
+    if (loggedInState === "true") {
+      setIsLoggedIn(true);
+    }
+  }, [pathname]); // Aktualisiert sich bei jedem Seitenwechsel
+
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn");
+    setIsLoggedIn(false);
+    router.push("/");
+  };
+
   const navLinks = [
     { name: "Dashboard", href: "/", icon: Home },
     { name: "My Shelf", href: "/shelf", icon: Library },
@@ -25,17 +44,16 @@ export default function Navbar() {
 
   return (
     <nav className="flex items-center justify-between w-full">
-      {/* Logo - Leitet immer aufs Dashboard zurück */}
+      {/* Logo */}
       <Link href="/" className="flex items-center gap-2 text-yellow-400">
         <BookOpen className="w-8 h-8" />
         <span className="font-bold text-2xl tracking-tight text-white">EpiLog</span>
       </Link>
 
-      {/* Center Links (Dynamisch generiert) */}
+      {/* Center Links */}
       <div className="hidden md:flex items-center gap-2 text-zinc-400 font-medium">
         {navLinks.map((link) => {
           const Icon = link.icon;
-          // Überprüfen, ob die aktuelle URL mit dem Link übereinstimmt
           const isActive = pathname === link.href;
 
           return (
@@ -59,20 +77,30 @@ export default function Navbar() {
       <div className="flex items-center gap-6">
         <button className="flex items-center gap-2 bg-yellow-400 text-black font-semibold px-5 py-2.5 rounded-xl hover:bg-yellow-500 transition-colors">
           <ScanLine className="w-5 h-5" />
-          Scan ISBN
+          <span className="hidden sm:inline">Scan ISBN</span>
         </button>
         
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-zinc-700 flex items-center justify-center overflow-hidden">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="Profile" className="w-full h-full object-cover bg-zinc-800" />
-          </div>
-          <div className="hidden lg:block text-sm">
-            <p className="text-white font-medium">Alex Thompson</p>
-          </div>
-          <button className="text-zinc-400 hover:text-white ml-2">
-            <LogOut className="w-5 h-5" />
-          </button>
-        </div>
+        {/* Ladezustand abwarten, um UI-Sprünge zu vermeiden */}
+        {mounted && (
+          isLoggedIn ? (
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-zinc-700 flex items-center justify-center overflow-hidden">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="Profile" className="w-full h-full object-cover bg-zinc-800" />
+              </div>
+              <div className="hidden lg:block text-sm">
+                <p className="text-white font-medium">Alex Thompson</p>
+              </div>
+              <button onClick={handleLogout} className="text-zinc-400 hover:text-white ml-2" title="Logout">
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
+          ) : (
+            <Link href="/login" className="flex items-center gap-2 text-white font-medium px-5 py-2.5 rounded-xl border border-zinc-700 hover:bg-zinc-800 transition-colors">
+              <LogIn className="w-5 h-5" />
+              Log In
+            </Link>
+          )
+        )}
       </div>
     </nav>
   );
