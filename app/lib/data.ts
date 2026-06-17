@@ -1,34 +1,13 @@
 export const mockBooks = [
-  { 
-    id: "1", 
-    title: "The Kite Runner", 
-    author: "Khaled Hosseini", 
-    year: 2003, 
-    genre: "Fiction", 
-    cover: "bg-blue-900", 
-    description: "Eine unvergessliche Geschichte über Freundschaft und Verrat im Afghanistan der 1970er Jahre. Ein absoluter Klassiker, der emotionale Tiefe mit historischem Kontext verbindet." 
-  },
-  { 
-    id: "2", 
-    title: "Dune", 
-    author: "Frank Herbert", 
-    year: 1965, 
-    genre: "Sci-Fi", 
-    cover: "bg-orange-900", 
-    description: "Der Wüstenplanet Arrakis ist der einzige Ort, an dem das wertvolle Spice abgebaut werden kann. Ein episches Meisterwerk über Politik, Religion und Überleben." 
-  },
-  { 
-    id: "3", 
-    title: "Clean Code", 
-    author: "Robert C. Martin", 
-    year: 2008, 
-    genre: "Education", 
-    cover: "bg-zinc-700", 
-    description: "Ein Muss für jeden Programmierer. Lerne, wie man Code schreibt, der nicht nur funktioniert, sondern auch lesbar und langfristig wartbar bleibt." 
-  },
+  { id: "1", title: "The Kite Runner", author: "Khaled Hosseini", year: 2003, genre: "Fiction", cover: "bg-blue-900", description: "An unforgettable story of friendship and betrayal in 1970s Afghanistan. A timeless classic that combines emotional depth with historical context.", trending: true, new: false, recommended: true },
+  { id: "2", title: "Dune", author: "Frank Herbert", year: 1965, genre: "Sci-Fi", cover: "bg-orange-900", description: "Set on the desert planet Arrakis, Dune is the story of the boy Paul Atreides, heir to a noble family tasked with ruling an inhospitable world where the only thing of value is the 'spice' melange.", trending: true, new: false, recommended: false },
+  { id: "3", title: "Clean Code", author: "Robert C. Martin", year: 2008, genre: "Education", cover: "bg-zinc-700", description: "Even bad code can function. But if code isn't clean, it can bring a development organization to its knees. A must-read for every developer.", trending: false, new: false, recommended: true },
+  { id: "4", title: "Atomic Habits", author: "James Clear", year: 2018, genre: "Self-Help", cover: "bg-amber-700", description: "No matter your goals, Atomic Habits offers a proven framework for improving every day. James Clear reveals practical strategies that will teach you exactly how to form good habits.", trending: true, new: false, recommended: false },
+  { id: "5", title: "Project Hail Mary", author: "Andy Weir", year: 2021, genre: "Sci-Fi", cover: "bg-indigo-900", description: "A lone astronaut must save the earth from disaster in this incredible new science-based thriller from the #1 New York Times bestselling author of The Martian.", trending: false, new: true, recommended: true },
+  { id: "6", title: "Yellowface", author: "R.F. Kuang", year: 2023, genre: "Fiction", cover: "bg-yellow-600", description: "White lies. Dark humor. Deadly consequences. Bestselling sensation Juniper Song is not who she says she is, she didn't write the book she claims she wrote, and she is most certainly not Asian American.", trending: false, new: true, recommended: false },
 ];
 
 export const mockReviews = [
-  { user: "MaxM", rating: 5, text: "Ein absolutes Meisterwerk! Konnte es nicht aus der Hand legen. Die Charakterentwicklung ist unübertroffen." },
-  { user: "Sarah_Read", rating: 4, text: "Sehr gut geschrieben, der Anfang zieht sich aber ein wenig. Gegen Ende wird es unfassbar spannend." }
+  { user: "MaxM", rating: 5, text: "An absolute masterpiece! I couldn't put it down. The character development is second to none." },
+  { user: "Sarah_Read", rating: 4, text: "Very well written, though the beginning dragged a bit. By the end, it gets incredibly tense." }
 ];

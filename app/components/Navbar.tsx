@@ -3,16 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { 
-  BookOpen, 
-  Home, 
-  Library, 
-  Activity, 
-  Search, 
-  ScanLine, 
-  LogOut,
-  LogIn
-} from "lucide-react";
+import { BookOpen, Home, Library, Activity, Compass, ScanLine, LogOut, LogIn } from "lucide-react";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -28,6 +19,8 @@ export default function Navbar() {
       setIsLoggedIn(true);
     }
   }, [pathname]); // Aktualisiert sich bei jedem Seitenwechsel
+  if (!mounted) return null; // Verhindert kurzes Flackern beim Laden
+  if (!isLoggedIn) return null; // Versteckt die Navbar komplett für Gäste
 
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn");
@@ -39,7 +32,7 @@ export default function Navbar() {
     { name: "Dashboard", href: "/dashboard", icon: Home },
     { name: "My Shelf", href: "/shelf", icon: Library },
     { name: "Activity", href: "/activity", icon: Activity },
-    { name: "Search", href: "/search", icon: Search },
+    { name: "Discover", href: "/discover", icon: Compass },
   ];
 
   return (
