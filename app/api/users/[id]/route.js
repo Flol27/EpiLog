@@ -15,7 +15,7 @@ export async function GET(request, { params }) {
         const db = await openDb();
         const user = db.prepare('SELECT id, email, firstname, lastname FROM users WHERE id = ?').get(id);
 
-        if(!user) return NextResponse.json({error:"Keine User. Datenbank löschen, oder manuell User anlegen"}, {status:500});
+        if(!user) return NextResponse.json({error:"User nicht gefunden", id:id}, {status:400});
         return NextResponse.json(user, { status: 200 });
 
     } catch (error) {
@@ -37,8 +37,6 @@ export async function PUT(request, { params }) {
         else if (authorized('user')) {admin = false;}
         else {return response.NOTAUTHORIZED;}
 
-        console.log(admin);
-
         const { id } = await params;
         const { email, password, firstname, lastname, role } = await request.json();
 
@@ -57,6 +55,8 @@ export async function PUT(request, { params }) {
         const db = await openDb();
 
         const result = db.prepare(`UPDATE users SET ${fields.join(", ")} WHERE id = ?`).run(...values, id);
+
+        if(result.changes == 0) return NextResponse.json({error: 'Nicht gefunden.', id:id},{ status: 404 });
 
         const user = db.prepare('SELECT id, email, firstname, lastname, role FROM users WHERE id = ?').get(id);
 

@@ -5,21 +5,19 @@ import * as argon2 from 'argon2';       // password hashing
 let db; // My Database
 export async function openDb() {
 
-    if(db) return db;
+    // Development-Modus (Hot Reload Schutz)
+    if (process.env.NODE_ENV === 'development' && global._sqliteDB) {
+        return global._sqliteDB;
+    }
+
+    if(db) return db; // Wenn schon exestiert, nicht nochmal öffnen
 
     const dbPath = process.env.DB;
     const dbExists = fs.existsSync(dbPath);
 
-
-    // Development-Modus (Hot Reload Schutz)
-    if (process.env.NODE_ENV === 'development' && !global._sqliteDB) {
-        global._sqliteDB = dbExists ? new Database(dbPath) : initDb(dbPath);
-    }
-    else{
-        db = dbExists ? new Database(dbPath) : initDb(dbPath);
-        return db;
-    }
-    db = global._sqliteDB;
+    db = dbExists ? new Database(dbPath) : await initDb(dbPath);
+    if(!db) throw new Error("Datenbank konnte nicht initialisiert werden!") // Error catching
+    db.pragma('foreign_keys = ON;'); // Damit die Relationen beachtet werden (In der Datenbank)
 
     return db;
 }
@@ -30,16 +28,25 @@ async function initDb(dbPath) {
     // Authors
     db.exec(`
     CREATE TABLE IF NOT EXISTS "authors" (
-        "author_id"	INTEGER,
-        "name"	TEXT,
-        PRIMARY KEY("author_id" AUTOINCREMENT)
+        "id"	INTEGER,
+        "name"	TEXT NOT NULL UNIQUE,
+        PRIMARY KEY("id" AUTOINCREMENT)
+    );
+    `);
+
+    // Publisher
+    db.exec(`
+    CREATE TABLE IF NOT EXISTS "publisher" (
+        "id"	INTEGER NOT NULL,
+        "name"	TEXT NOT NULL UNIQUE,
+        PRIMARY KEY("id" AUTOINCREMENT)
     );
     `);
 
     // Books
     db.exec(`
     CREATE TABLE "books" (
-        "book_id"	INTEGER NOT NULL,
+        "id"	INTEGER NOT NULL,
         "isbn"	TEXT UNIQUE,
         "title"	TEXT NOT NULL,
         "subtitle"	TEXT,
@@ -48,26 +55,17 @@ async function initDb(dbPath) {
         "picture"	TEXT,
         "pages"	INTEGER,
         "pub_year"	INTEGER,
-        PRIMARY KEY("book_id" AUTOINCREMENT),
-        FOREIGN KEY("publisher_id") REFERENCES "publisher"("publisher_id") ON DELETE CASCADE ON UPDATE CASCADE
+        PRIMARY KEY("id" AUTOINCREMENT),
+        FOREIGN KEY("publisher_id") REFERENCES "publisher"("id") ON DELETE NO ACTION
     );
     `);
 
     // Genres
     db.exec(`
     CREATE TABLE IF NOT EXISTS "genres" (
-        "genre_id"	INTEGER NOT NULL,
+        "id"	INTEGER NOT NULL,
         "name"	TEXT NOT NULL UNIQUE,
-        PRIMARY KEY("genre_id" AUTOINCREMENT)
-    );
-    `);
-
-    // Publisher
-    db.exec(`
-    CREATE TABLE IF NOT EXISTS "publisher" (
-        "publisher_id"	INTEGER NOT NULL,
-        "name"	INTEGER,
-        PRIMARY KEY("publisher_id" AUTOINCREMENT)
+        PRIMARY KEY("id" AUTOINCREMENT)
     );
     `);
 
@@ -90,8 +88,8 @@ async function initDb(dbPath) {
         "b_id"	INTEGER NOT NULL,
         "a_id"	INTEGER NOT NULL,
         PRIMARY KEY("a_id","b_id"),
-        FOREIGN KEY("a_id") REFERENCES "authors"("author_id") ON DELETE CASCADE ON UPDATE CASCADE,
-        FOREIGN KEY("b_id") REFERENCES ""
+        FOREIGN KEY("a_id") REFERENCES "authors"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+        FOREIGN KEY("b_id") REFERENCES "books"("id") ON DELETE CASCADE ON UPDATE CASCADE
     );
     `);
 
@@ -101,8 +99,8 @@ async function initDb(dbPath) {
         "b_id"	INTEGER NOT NULL,
         "g_id"	INTEGER NOT NULL,
         PRIMARY KEY("b_id","g_id"),
-        FOREIGN KEY("b_id") REFERENCES "",
-        FOREIGN KEY("g_id") REFERENCES "genres"("genre_id") ON DELETE CASCADE ON UPDATE CASCADE
+        FOREIGN KEY("b_id") REFERENCES "books"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+        FOREIGN KEY("g_id") REFERENCES "genres"("id") ON DELETE CASCADE ON UPDATE CASCADE
     );
     `);
 
@@ -117,12 +115,12 @@ async function initDb(dbPath) {
         "rating"	INTEGER,
         "rating_text"	TEXT,
         PRIMARY KEY("u_id","b_id"),
-        FOREIGN KEY("b_id") REFERENCES "books"("book_id") ON DELETE CASCADE ON UPDATE CASCADE,
+        FOREIGN KEY("b_id") REFERENCES "books"("id") ON DELETE CASCADE ON UPDATE CASCADE,
         FOREIGN KEY("u_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE
     );
     `);
 
-    // Session
+    // Session <-- Braucht man nicht, oder?
     db.exec(`
     CREATE TABLE IF NOT EXISTS "session" (
         "cookie_id"	INTEGER,

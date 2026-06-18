@@ -4,6 +4,12 @@
  * TODO
  */
 
+// Bei 'undefined' -> false, bei 'null' -> true
+
+export function checkDate(date){
+    return date;
+}
+
 export function checkEmail(email){
     return email;
 }
@@ -18,4 +24,16 @@ export function checkName(name){
 
 export function checkRole(role){
     return role;
+}
+
+export function checkISBN(isbn){
+    return isbn;
+}
+
+export function checkNum(num){
+    return num;
+}
+
+export function checkYear(year){
+    return year;
 }

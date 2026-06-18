@@ -11,7 +11,7 @@ export async function GET() {
         if (!authorized('admin')) {return response.NOTAUTHORIZED;}
 
         const db = await openDb();
-        const users = await db.prepare('SELECT id, email, firstname, lastname FROM users').all(); // Passwort hier weglassen!
+        const users = await db.prepare('SELECT id, email, firstname, lastname, password FROM users').all(); // Passwort hier weglassen!
 
         return NextResponse.json(users, { status: 200 });
 
