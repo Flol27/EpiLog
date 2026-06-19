@@ -20,7 +20,7 @@ export async function GET(request, { params }) {
             WHERE b.id = ?`
         ).all(id);
 
-        console.log(rows);
+        if(rows.length === 0) return NextResponse.json({error:"Buch nicht gefunden", id:id}, {status:400});
 
         const book = {
             id: rows[0].id,
@@ -31,7 +31,7 @@ export async function GET(request, { params }) {
             }))
         };
 
-        if(!book) return NextResponse.json({error:"Buch nicht gefunden", id:id}, {status:400});
+
         return NextResponse.json(book, { status: 200 });
 
     } catch (error) {
@@ -50,6 +50,11 @@ export async function POST(request, { params }) {
 
         const { id } = await params;
         const { genre_id } = await request.json();
+
+        if (!genre_id) {
+            return NextResponse.json({ error: 'ID fehlt.' }, { status: 400 });
+        }
+
         const db = await openDb();
 
         const result = db.prepare('INSERT INTO book_genres (b_id, g_id) VALUES (?, ?)').run(id, genre_id);
@@ -80,6 +85,11 @@ export async function DELETE(request, { params }) {
 
         const { id } = await params;
         const { genre_id } = await request.json();
+
+        if (!genre_id) {
+            return NextResponse.json({ error: 'ID fehlt.' }, { status: 400 });
+        }
+
         const db = await openDb();
         const stmt = db.prepare('DELETE FROM book_genres WHERE b_id = ? AND g_id = ?').run(id, genre_id);
 

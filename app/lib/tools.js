@@ -37,3 +37,8 @@ export function checkNum(num){
 export function checkYear(year){
     return year;
 }
+
+export function checkPicture(year){
+    return year;
+}
+

@@ -20,8 +20,6 @@ export async function GET(request, { params }) {
             WHERE b.id = ?`
         ).all(id);
 
-        console.log(rows);
-
         const book = {
             id: rows[0].id,
             title:rows[0].title,
@@ -50,8 +48,12 @@ export async function POST(request, { params }) {
 
         const { id } = await params;
         const { author_id } = await request.json();
+
+        if (!author_id) {
+            return NextResponse.json({ error: 'ID fehlt.' }, { status: 400 });
+        }
+
         const db = await openDb();
-        console.log(author_id);
 
         const result = db.prepare('INSERT INTO book_author (b_id, a_id) VALUES (?, ?)').run(id, author_id);
 
@@ -81,6 +83,11 @@ export async function DELETE(request, { params }) {
 
         const { id } = await params;
         const { author_id } = await request.json();
+
+        if (!author_id) {
+            return NextResponse.json({ error: 'ID fehlt.' }, { status: 400 });
+        }
+
         const db = await openDb();
         const stmt = db.prepare('DELETE FROM book_author WHERE b_id = ? AND a_id = ?').run(id, author_id);
 
