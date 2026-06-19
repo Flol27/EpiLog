@@ -41,7 +41,7 @@ export async function POST(request) {
         const db = await openDb();
         const result = db.prepare('INSERT INTO authors (name) VALUES (?)').run(name);
 
-        const author = db.prepare('SELECT id, name FROM author WHERE id = ?').get(result.lastInsertRowid);
+        const author = db.prepare('SELECT id, name FROM authors WHERE id = ?').get(result.lastInsertRowid);
 
         return NextResponse.json(
             {
