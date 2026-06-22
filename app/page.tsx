@@ -68,7 +68,6 @@ export default function Dashboard() {
             </div>
           </div>
         </section>
-
       </main>
     </div>
   );
