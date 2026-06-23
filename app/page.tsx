@@ -3,12 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-<<<<<<< Updated upstream
-import { BookOpen, ArrowRight, TrendingUp, Users, Compass, ScanLine, Star } from "lucide-react";
-=======
 import { motion, useScroll, useTransform } from "framer-motion";
 import { BookOpen, ScanLine, ArrowRight, ArrowUpRight, Users, BarChart3 } from "lucide-react";
->>>>>>> Stashed changes
 
 export default function LandingPage() {
   const router = useRouter();
@@ -21,154 +17,6 @@ export default function LandingPage() {
   }, [router]);
 
   return (
-<<<<<<< Updated upstream
-    <div className="-m-4 md:-m-8">
-      {/* ── HERO ─────────────────────────────── */}
-      <section className="relative h-[90vh] min-h-[600px] w-full flex items-end overflow-hidden">
-        {/* Hintergrundbild */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2560&auto=format&fit=crop"
-            alt=""
-            className="w-full h-full object-cover"
-          />
-          {/* Dunkler Verlauf, damit Text lesbar bleibt */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#09090b]/70 to-[#09090b]/30" />
-        </div>
-
-        {/* Logo oben links */}
-        <div className="absolute top-8 left-6 md:left-12 z-20 flex items-center gap-2 text-yellow-400">
-          <BookOpen className="w-8 h-8" />
-          <span className="font-bold text-2xl tracking-tight text-white">EpiLog</span>
-        </div>
-
-        {/* Hero-Text unten */}
-        <div className="relative z-10 px-6 md:px-12 pb-16 md:pb-24 max-w-4xl">
-          <div className="flex items-center gap-2 bg-yellow-400/10 text-yellow-400 px-4 py-2 rounded-full border border-yellow-400/20 w-fit mb-6 text-sm font-semibold uppercase tracking-wide">
-            <Star className="w-4 h-4 fill-yellow-400" /> Dein digitales Bücherregal
-          </div>
-          <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight leading-[1.05] mb-6">
-            Jede Seite zählt.<br />
-            <span className="text-yellow-400">Behalte den Überblick.</span>
-          </h1>
-          <p className="text-lg md:text-xl text-zinc-300 max-w-2xl mb-8 leading-relaxed font-light">
-            EpiLog ist mehr als ein Tracker. Dokumentiere jedes Kapitel, bewerte deine Favoriten und teile deine Meilensteine mit Freunden.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Link href="/register" className="flex items-center justify-center gap-2 bg-yellow-400 text-black font-bold text-lg px-8 py-4 rounded-xl hover:bg-yellow-500 transition-all duration-300">
-              Kostenlos starten <ArrowRight className="w-5 h-5" />
-            </Link>
-            <Link href="/login" className="flex items-center justify-center gap-2 bg-white/5 backdrop-blur-sm border border-white/20 text-white font-semibold text-lg px-8 py-4 rounded-xl hover:bg-white/10 transition-all duration-300">
-              Anmelden
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── FEATURES ─────────────────────────── */}
-      <section className="px-6 md:px-12 py-24 max-w-7xl mx-auto">
-        <div className="mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-4">
-            Alles, was Leser brauchen.
-          </h2>
-          <p className="text-lg text-zinc-400 max-w-2xl font-light">
-            Drei Werkzeuge, die aus dem Lesen ein Erlebnis machen.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <FeatureCard
-            image="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=1200&auto=format&fit=crop"
-            icon={TrendingUp}
-            title="Ziele & Statistiken."
-            text="Seiten, Kapitel oder Hörbuch-Minuten – behalte deine Leseziele im Blick und baue eine Streak auf."
-          />
-          <FeatureCard
-            image="https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=1200&auto=format&fit=crop"
-            icon={Users}
-            title="Community."
-            text="Vernetze dich mit anderen Lesern, tausche Bewertungen aus und sieh, was deine Freunde gerade lesen."
-          />
-          <FeatureCard
-            image="https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=1200&auto=format&fit=crop"
-            icon={Compass}
-            title="Entdeckungen."
-            text="Unser Algorithmus analysiert deinen Geschmack und schlägt dir Bücher vor, die du lieben wirst."
-          />
-        </div>
-      </section>
-
-      {/* ── SO FUNKTIONIERT'S ────────────────── */}
-      <section className="px-6 md:px-12 py-24 bg-[#0d0d0f] border-y border-zinc-800/50">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-4">
-              So einfach geht's.
-            </h2>
-            <p className="text-lg text-zinc-400 max-w-2xl font-light">
-              In drei Schritten vom Buchregal zur digitalen Bibliothek.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <StepCard number="01" icon={ScanLine} title="Scannen." text="Scanne den ISBN-Barcode deines Buchs oder suche per Titel." />
-            <StepCard number="02" icon={BookOpen} title="Sammeln." text="Füge das Buch deinem Regal hinzu und verfolge deinen Fortschritt." />
-            <StepCard number="03" icon={Star} title="Bewerten." text="Teile deine Meinung und entdecke, was andere empfehlen." />
-          </div>
-        </div>
-      </section>
-
-      {/* ── ABSCHLUSS-CTA ────────────────────── */}
-      <section className="px-6 md:px-12 py-32 text-center">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-4xl md:text-6xl font-bold text-white tracking-tight mb-6">
-            Bereit für dein nächstes Kapitel?
-          </h2>
-          <p className="text-lg text-zinc-400 mb-10 font-light">
-            Starte kostenlos und verwandle dein Lesen in eine Reise, die du festhalten kannst.
-          </p>
-          <Link href="/register" className="inline-flex items-center justify-center gap-2 bg-yellow-400 text-black font-bold text-lg px-10 py-4 rounded-xl hover:bg-yellow-500 transition-all duration-300">
-            Jetzt starten <ArrowRight className="w-5 h-5" />
-          </Link>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-// ── Hilfskomponenten ────────────────────────
-
-function FeatureCard({ image, icon: Icon, title, text }: { image: string; icon: any; title: string; text: string }) {
-  return (
-    <div className="group relative h-96 rounded-3xl overflow-hidden border border-zinc-800/50">
-      {/* Bild */}
-      <img src={image} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-      {/* Verlauf */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-      {/* Inhalt */}
-      <div className="relative h-full flex flex-col justify-end p-8">
-        <div className="bg-yellow-400/20 backdrop-blur-sm w-12 h-12 rounded-xl flex items-center justify-center mb-4 border border-yellow-400/30">
-          <Icon className="w-6 h-6 text-yellow-400" />
-        </div>
-        <h3 className="text-2xl font-bold text-white mb-2">{title}</h3>
-        <p className="text-zinc-300 text-sm leading-relaxed font-light">{text}</p>
-      </div>
-    </div>
-  );
-}
-
-function StepCard({ number, icon: Icon, title, text }: { number: string; icon: any; title: string; text: string }) {
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-4">
-        <span className="text-5xl font-bold text-zinc-700">{number}</span>
-        <div className="bg-zinc-800 w-12 h-12 rounded-xl flex items-center justify-center">
-          <Icon className="w-6 h-6 text-yellow-400" />
-        </div>
-      </div>
-      <h3 className="text-2xl font-bold text-white">{title}</h3>
-      <p className="text-zinc-400 leading-relaxed font-light">{text}</p>
-=======
     <div className="-m-4 md:-m-8 bg-[#09090b] text-white overflow-x-hidden">
       <Nav />
       <Hero />
@@ -177,7 +25,6 @@ function StepCard({ number, icon: Icon, title, text }: { number: string; icon: a
       <Voices />
       <FinalCta />
       <Footer />
->>>>>>> Stashed changes
     </div>
   );
 }
@@ -209,16 +56,13 @@ function Nav() {
 ─────────────────────────────────────────────── */
 function Hero() {
   const ref = useRef<HTMLDivElement>(null);
-  // Scroll-Position relativ zu diesem Element verfolgen
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
   });
-  // Beim Runterscrollen leicht nach oben + ausblenden (Parallax)
   const y = useTransform(scrollYProgress, [0, 1], [0, -120]);
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
-  // Schwebende Buch-Bilder im Hintergrund
   const floaters = [
     { src: "https://covers.openlibrary.org/b/isbn/9781449493899-L.jpg", className: "top-[20%] left-[8%] w-44 rotate-[-8deg]", delay: 0.2 },
     { src: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=600&auto=format&fit=crop", className: "top-[12%] left-[18%] w-40 rotate-[6deg]", delay: 0.35 },
@@ -229,10 +73,8 @@ function Hero() {
 
   return (
     <section ref={ref} className="relative h-screen min-h-[720px] flex items-center justify-center overflow-hidden">
-      {/* warmer Lichtschein im Hintergrund */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(120,90,40,0.25),transparent_60%)]" />
 
-      {/* schwebende Buchcover */}
       {floaters.map((f, i) => (
         <motion.img
           key={i}
@@ -245,7 +87,6 @@ function Hero() {
         />
       ))}
 
-      {/* Zentraler Text */}
       <motion.div style={{ y, opacity }} className="relative z-20 text-center px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -357,7 +198,6 @@ function ReadingFlow() {
       </Reveal>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
-        {/* Text-Spalte */}
         <div className="flex flex-col gap-16">
           {steps.map((s, i) => (
             <Reveal key={s.num} delay={i * 0.1}>
@@ -368,7 +208,6 @@ function ReadingFlow() {
           ))}
         </div>
 
-        {/* Bild-Spalte – bleibt beim Scrollen stehen */}
         <div className="hidden md:block sticky top-24 h-[70vh] rounded-3xl overflow-hidden border border-white/10">
           <img
             src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=1200&auto=format&fit=crop"
@@ -469,9 +308,7 @@ function Footer() {
   return (
     <footer className="border-t border-white/10 px-6 md:px-12 pt-20 pb-10">
       <div className="max-w-7xl mx-auto">
-        {/* Oberer Bereich: Logo + Link-Spalten */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-16">
-          {/* Logo-Spalte */}
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <div className="bg-white text-black w-9 h-9 rounded-lg flex items-center justify-center font-bold text-lg">B</div>
@@ -482,7 +319,6 @@ function Footer() {
             </p>
           </div>
 
-          {/* Link-Spalten */}
           {columns.map((col) => (
             <div key={col.title}>
               <h4 className="text-sm font-semibold mb-4">{col.title}</h4>
@@ -499,7 +335,6 @@ function Footer() {
           ))}
         </div>
 
-        {/* Untere Rechtszeile */}
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <p className="text-zinc-500 text-sm">© 2026 BookStack · DHBW Stuttgart</p>
           <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-zinc-500">
@@ -513,6 +348,7 @@ function Footer() {
     </footer>
   );
 }
+
 /* ──────────────────────────────────────────────
    HELFER: Reveal – blendet Inhalt beim Scrollen ein
 ─────────────────────────────────────────────── */
