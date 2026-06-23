@@ -79,12 +79,14 @@ export default function Navbar() {
         {mounted && (
           isLoggedIn ? (
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-zinc-700 flex items-center justify-center overflow-hidden">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="Profile" className="w-full h-full object-cover bg-zinc-800" />
-              </div>
-              <div className="hidden lg:block text-sm">
-                <p className="text-white font-medium">Alex Thompson</p>
-              </div>
+              <Link href="/profile" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                <div className="w-10 h-10 rounded-full bg-zinc-700 flex items-center justify-center overflow-hidden">
+                  <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="Profile" className="w-full h-full object-cover bg-zinc-800" />
+                </div>
+                <div className="hidden lg:block text-sm">
+                  <p className="text-white font-medium">Alex Thompson</p>
+                </div>
+              </Link>
               <button onClick={handleLogout} className="text-zinc-400 hover:text-white ml-2" title="Logout">
                 <LogOut className="w-5 h-5" />
               </button>
