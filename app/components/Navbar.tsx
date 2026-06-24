@@ -4,12 +4,14 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { BookOpen, Home, Library, Compass, Users, ScanLine, LogOut, LogIn } from "lucide-react";
+import ScanModal from "./ScanModal";
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
 
   // Prüft den Mockup-Login-Status im Browser
   useEffect(() => {
@@ -68,7 +70,7 @@ export default function Navbar() {
 
       {/* Right Actions */}
       <div className="flex items-center gap-6">
-        <button className="flex items-center gap-2 bg-yellow-400 text-black font-semibold px-5 py-2.5 rounded-xl hover:bg-yellow-500 transition-colors">
+        <button onClick={() => setScanOpen(true)} className="flex items-center gap-2 bg-yellow-400 text-black font-semibold px-5 py-2.5 rounded-xl hover:bg-yellow-500 transition-colors">
           <ScanLine className="w-5 h-5" />
           <span className="hidden sm:inline">Scan ISBN</span>
         </button>
@@ -77,12 +79,14 @@ export default function Navbar() {
         {mounted && (
           isLoggedIn ? (
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-zinc-700 flex items-center justify-center overflow-hidden">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="Profile" className="w-full h-full object-cover bg-zinc-800" />
-              </div>
-              <div className="hidden lg:block text-sm">
-                <p className="text-white font-medium">Alex Thompson</p>
-              </div>
+              <Link href="/profile" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                <div className="w-10 h-10 rounded-full bg-zinc-700 flex items-center justify-center overflow-hidden">
+                  <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="Profile" className="w-full h-full object-cover bg-zinc-800" />
+                </div>
+                <div className="hidden lg:block text-sm">
+                  <p className="text-white font-medium">Alex Thompson</p>
+                </div>
+              </Link>
               <button onClick={handleLogout} className="text-zinc-400 hover:text-white ml-2" title="Logout">
                 <LogOut className="w-5 h-5" />
               </button>
@@ -95,6 +99,9 @@ export default function Navbar() {
           )
         )}
       </div>
+      <ScanModal isOpen={scanOpen} onClose={() => setScanOpen(false)} />
+    
     </nav>
   );
 }
+
