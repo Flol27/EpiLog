@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { X, Search, Camera, Loader2, BookOpen } from "lucide-react";
-import { Html5Qrcode } from "html5-qrcode";
 
 interface ScanModalProps {
   isOpen: boolean;
