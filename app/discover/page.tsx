@@ -32,7 +32,14 @@ export default function Discover() {
     const searchAPI = async () => {
       setIsSearching(true);
       try {
-        const response = await fetch(`/api/openlibrary_search?q=${encodeURIComponent(debouncedTerm)}`);
+        const response = await fetch(apiUrl, {
+  method: 'GET',
+  headers: {
+    // Cyber-Security-Trick: Wir tarnen den Server-Request als normalen Browser-Aufruf
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+  },
+  next: { revalidate: 3600 }
+});
         if (response.ok) {
           const data = await response.json();
           
