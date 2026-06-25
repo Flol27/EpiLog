@@ -14,6 +14,10 @@ export function checkEmail(email){
     return email;
 }
 
+export function checkUsername(username){
+    return username;
+}
+
 export function checkPassword(password){
     return password;
 }
@@ -32,13 +36,5 @@ export function checkISBN(isbn){
 
 export function checkNum(num){
     return num;
-}
-
-export function checkYear(year){
-    return year;
-}
-
-export function checkPicture(year){
-    return year;
 }
 

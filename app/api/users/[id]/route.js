@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import * as argon2 from 'argon2';
-import { openDb } from '@/app/lib/db';
+import db from '@/app/lib/db';
 import { authorized } from '@/app/lib/auth';
 import * as response from '@/app/lib/response';
 import * as tools from '@/app/lib/tools';
@@ -12,8 +12,8 @@ export async function GET(request, { params }) {
         if (!authorized('admin')) {return response.NOTAUTHORIZED;}
 
         const { id } = await params;
-        const db = await openDb();
-        const user = db.prepare('SELECT id, email, firstname, lastname FROM users WHERE id = ?').get(id);
+
+        const user = db.prepare('SELECT id, email, username, firstname, lastname FROM users WHERE id = ?').get(id);
 
         if(!user) return NextResponse.json({error:"User nicht gefunden", id:id}, {status:400});
         return NextResponse.json(user, { status: 200 });
@@ -38,27 +38,28 @@ export async function PUT(request, { params }) {
         else {return response.NOTAUTHORIZED;}
 
         const { id } = await params;
-        const { email, password, firstname, lastname, role } = await request.json();
+        const { email, password, username, firstname, lastname, role } = await request.json();
 
         let fields = [];
         let values = [];
 
         // Check fields
-        if(email){fields.push("email = ?");values.push(email);}
-        if(password){fields.push("password = ?");values.push(await argon2.hash(password));}
-        if(firstname){fields.push("firstname = ?");values.push(firstname);}
-        if(lastname){fields.push("lastname = ?");values.push(lastname);}
-        if(role){if(admin){fields.push("role = ?");values.push(role);}}
+        if (tools.checkEmail(email))        { fields.push('email = ?');         values.push(email); }
+        if (tools.checkPassword(password))  { fields.push('password = ?');      values.push(await argon2.hash(password)); }
+        if (tools.checkUsername(username))  { fields.push('username = ?');      values.push(username); }
+        if (tools.checkName(firstname))     { fields.push('firstname = ?');     values.push(firstname); }
+        if (tools.checkName(lastname))      { fields.push('lastname = ?');      values.push(lastname); }
+        if (tools.checkRole(role) && admin) { fields.push('role = ?'); values.push(role); }
+
+
 
         if(fields.length === 0) return NextResponse.json({error: 'Keine Daten, oder nicht genug Rechte.'},{ status: 400 });
-
-        const db = await openDb();
 
         const result = db.prepare(`UPDATE users SET ${fields.join(", ")} WHERE id = ?`).run(...values, id);
 
         if(result.changes == 0) return NextResponse.json({error: 'Nicht gefunden.', id:id},{ status: 404 });
 
-        const user = db.prepare('SELECT id, email, firstname, lastname, role FROM users WHERE id = ?').get(id);
+        const user = db.prepare('SELECT id, email, username, firstname, lastname, role FROM users WHERE id = ?').get(id);
 
         return NextResponse.json(
             {
@@ -85,7 +86,7 @@ export async function DELETE(request, { params }) {
         if (!authorized('admin')) {return response.NOTAUTHORIZED;}
 
         const { id } = await params;
-        const db = await openDb();
+
         const stmt = db.prepare('DELETE FROM users WHERE id = ?').run(id);
 
         if(stmt.changes < 1){return NextResponse.json({ error:"Kein User gefunden"}, { status: 400 });}
