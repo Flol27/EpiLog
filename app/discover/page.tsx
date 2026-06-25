@@ -32,7 +32,7 @@ export default function Discover() {
     const searchAPI = async () => {
       setIsSearching(true);
       try {
-        const response = await fetch(apiUrl, {
+        const response = await fetch(`/api/openlibrary_search?q=${encodeURIComponent(debouncedTerm)}`, {
   method: 'GET',
   headers: {
     // Cyber-Security-Trick: Wir tarnen den Server-Request als normalen Browser-Aufruf
@@ -51,7 +51,7 @@ export default function Discover() {
             year: b.publishDate,
             genre: b.genres,
             // Wenn es eine ISBN gibt, holen wir das Bild. Sonst Platzhalter-Style.
-            coverUrl: b.isbn !== 'Keine ISBN vorhanden' 
+            coverUrl: b.coverKey !== null 
               ? `https://covers.openlibrary.org/b/olid/${b.coverKey}-L.jpg` 
               : null,
             cover: 'bg-zinc-800', 

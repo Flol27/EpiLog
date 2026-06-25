@@ -75,7 +75,7 @@ for (const book of openLibraryDocs) {
         if (appleData.results && appleData.results.length > 0) {
           const appleBook = appleData.results[0];
           if (appleBook && appleBook.genres) {
-            genres = appleBook.genres.join(", ");
+            genres = appleBook.genres[0];
           }
         }
       }
