@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "html5-qrcode": "^2.3.8",
     "argon2": "^0.44.0",
     "better-sqlite3": "^12.10.1",
     "fs": "^0.0.1-security",
