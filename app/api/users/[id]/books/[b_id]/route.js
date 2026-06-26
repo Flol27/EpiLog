@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '@/app/lib/db';
+import { prisma } from "@/lib/prisma";
 import { authorized } from '@/app/lib/auth';
 import * as response from '@/app/lib/response';
 import * as tools from '@/app/lib/tools';

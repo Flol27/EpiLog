@@ -1,11 +1,118 @@
 import { NextResponse } from 'next/server';
-import db from '@/app/lib/db';
+import { prisma } from "@/lib/prisma";
 import { authorized } from '@/app/lib/auth';
 import * as response from '@/app/lib/response';
 import * as tools from '@/app/lib/tools';
 
 
-export async function GET(request, { params }) {
+export async function GET(request, { params }){
+    try{
+
+        if (!authorized('user')) {return response.NOTAUTHORIZED;}
+
+        const { id } = await params;
+        const u_id = parseInt(id, 10);
+
+        const user = await prisma.user.findUnique({
+            where: { id:u_id },
+            select: {
+                id:        true,
+                email:     true,
+                username:  true,
+                firstname: true,
+                lastname:  true,
+                role:      true,
+                bookUser: {
+                    select: {
+                        book: true
+                    }
+                }
+            }
+        });
+
+        return NextResponse.json({user:user}, { status: 200 });
+
+    } catch(error){
+        return NextResponse.json(
+            {
+                description: 'Fehler beim Abrufen der Nutzerdaten',
+                error: error.message
+            },
+            { status: 500 }
+        );
+    }
+}
+
+export async function POST(request, { params }){
+    try{
+
+        if (!authorized('user')) {return response.NOTAUTHORIZED;}
+
+        const { b_id } = await request.json();
+        const { id } = await params;
+        const u_id = parseInt(id, 10);
+
+        if (!u_id || !b_id) {
+            return NextResponse.json(
+                { description: 'Nutzer und Buch sind erforderlich', u_id:u_id, b_id:b_id },
+                { status: 400 }
+            );
+        }
+
+        const user = await prisma.user.findUnique({ where: { id: u_id } })
+        const book = await prisma.book.findUnique({ where: { id: b_id } })
+
+        if (!user) return NextResponse.json({ description: 'Nutzer nicht gefunden.' }, { status: 404 })
+        if (!book) return NextResponse.json({ description: 'Buch nicht gefunden.' }, { status: 404 })
+
+
+        const response = await prisma.bookUser.upsert({
+            where: {
+                userId_bookId: {
+                    userId: u_id,
+                    bookId: b_id,
+            }},
+            create:{
+                userId: u_id,
+                bookId: b_id
+            },
+            update:{}
+        });
+        /*
+        const user = await prisma.user.findUnique({
+            where: {id:response.id},
+            select: {
+                id:        true,
+                email:     true,
+                username:  true,
+                firstname: true,
+                lastname:  true,
+                role:      true
+            }
+        });
+        */
+        return NextResponse.json(
+            {
+                description: 'Nutzer erfolgreich angelegt',
+                user:response
+            },
+            { status: 201 }
+        );
+
+    } catch(error){
+        return NextResponse.json(
+            {
+                description: 'Fehler beim Abrufen der Nutzerdaten',
+                error: error.message
+            },
+            { status: 500 }
+        );
+    }
+}
+
+
+
+export async function GET2(request, { params }) {
     try {
         if (!authorized('user')) return response.NOTAUTHORIZED;
 
@@ -27,7 +134,7 @@ export async function GET(request, { params }) {
     }
 }
 
-export async function POST(request, { params }) {
+export async function POST2(request, { params }) {
     try {
 
         if (!authorized('user')) return response.NOTAUTHORIZED;
