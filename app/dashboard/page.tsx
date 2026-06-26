@@ -7,41 +7,37 @@ export default function Dashboard() {
   return (
     <div className="w-full flex flex-col gap-8">
 
-      {/* ── Begrüßung ────────────────────────── */}
       <Reveal>
         <section className="border-b border-white/10 pb-8">
-          <p className="text-zinc-500 tracking-[0.3em] text-xs mb-4">DEIN LESEJAHR 2026</p>
+          <p className="text-zinc-500 tracking-[0.3em] text-xs mb-4">YOUR READING YEAR 2026</p>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-3">
-            Willkommen zurück, <span className="italic font-serif text-yellow-400">Alex.</span>
+            Welcome back, <span className="italic font-serif text-yellow-400">Alex.</span>
           </h1>
           <div className="flex items-center gap-2 text-zinc-400">
             <Flame className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-            <p>Du bist auf einer <span className="text-white font-semibold">15-Tage</span>-Lesestreak.</p>
+            <p>You are on a <span className="text-white font-semibold">15-day</span> reading streak.</p>
           </div>
         </section>
       </Reveal>
 
-      {/* ── Statistiken ──────────────────────── */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-        <StatCard index={0} icon={BookOpen} num="12" label="Bücher 2026" />
-        <StatCard index={1} icon={Target} num="4.234" label="Seiten gelesen" />
-        <StatCard index={2} icon={Star} num="4,3" label="Ø Bewertung" />
-        <StatCard index={3} icon={Flame} num="15" label="Tage Streak" highlight />
+        <StatCard index={0} icon={BookOpen} num="12" label="Books 2026" />
+        <StatCard index={1} icon={Target} num="4,234" label="Pages read" />
+        <StatCard index={2} icon={Star} num="4.3" label="Avg. rating" />
+        <StatCard index={3} icon={Flame} num="15" label="Day streak" highlight />
       </section>
 
-      {/* ── Untere Module ────────────────────── */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        {/* Aktuelles Buch */}
         <Reveal delay={0.15}>
           <div className="bg-[#121214] border border-white/10 rounded-3xl p-8 h-full flex flex-col">
             <div className="flex justify-between items-center mb-8">
               <div>
-                <p className="text-zinc-500 tracking-[0.2em] text-xs mb-2">GERADE DABEI</p>
-                <h2 className="text-2xl font-bold">Currently Reading</h2>
+                <p className="text-zinc-500 tracking-[0.2em] text-xs mb-2">CURRENTLY READING</p>
+                <h2 className="text-2xl font-bold">My Book</h2>
               </div>
               <button className="text-yellow-400 hover:text-yellow-300 flex items-center gap-1 text-sm font-medium transition-colors">
-                Alle <ArrowRight className="w-4 h-4" />
+                All <ArrowRight className="w-4 h-4" />
               </button>
             </div>
             <div className="flex gap-6 items-center">
@@ -49,10 +45,9 @@ export default function Dashboard() {
               <div>
                 <h3 className="text-xl font-bold mb-1">The Kite Runner</h3>
                 <p className="text-zinc-400 mb-4">Khaled Hosseini</p>
-                {/* Fortschritt */}
                 <div className="w-48 max-w-full">
                   <div className="flex justify-between text-xs text-zinc-500 mb-1.5">
-                    <span>Seite 178 / 304</span>
+                    <span>Page 178 / 304</span>
                     <span className="text-yellow-400">59%</span>
                   </div>
                   <div className="h-2 w-full rounded-full bg-zinc-800 overflow-hidden">
@@ -69,14 +64,13 @@ export default function Dashboard() {
           </div>
         </Reveal>
 
-        {/* Aktivitäts-Chart */}
         <Reveal delay={0.25}>
           <div className="bg-[#121214] border border-white/10 rounded-3xl p-8 h-full flex flex-col">
             <div className="flex justify-between items-center mb-8">
               <div>
-                <p className="text-zinc-500 tracking-[0.2em] text-xs mb-2">LETZTE 5 MONATE</p>
+                <p className="text-zinc-500 tracking-[0.2em] text-xs mb-2">LAST 5 MONTHS</p>
                 <h2 className="text-2xl font-bold flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-yellow-400" /> Leseaktivität
+                  <TrendingUp className="w-5 h-5 text-yellow-400" /> Reading Activity
                 </h2>
               </div>
             </div>
@@ -100,9 +94,6 @@ export default function Dashboard() {
   );
 }
 
-/* ──────────────────────────────────────────────
-   Stat-Karte mit gestaffeltem Einblenden
-─────────────────────────────────────────────── */
 function StatCard({ index, icon: Icon, num, label, highlight }: { index: number; icon: any; num: string; label: string; highlight?: boolean }) {
   return (
     <motion.div
@@ -118,9 +109,6 @@ function StatCard({ index, icon: Icon, num, label, highlight }: { index: number;
   );
 }
 
-/* ──────────────────────────────────────────────
-   Reveal – sanftes Einblenden
-─────────────────────────────────────────────── */
 function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   return (
     <motion.div
