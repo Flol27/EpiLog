@@ -38,8 +38,8 @@ async function initDB() {
     CREATE TABLE IF NOT EXISTS "book_user" (
         "u_id"	INTEGER NOT NULL,
         "b_id"	INTEGER NOT NULL,
-        "paged_read"	INTEGER,
-        "read_edit_date", NUMERIC,
+        "pages_read"	INTEGER,
+        "readstreak_edit_date" NUMERIC,
         "start_date"	NUMERIC,
         "read_date"	NUMERIC,
         "rating"	INTEGER,

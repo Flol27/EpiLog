@@ -38,3 +38,7 @@ export function checkNum(num){
     return num;
 }
 
+export function checkText(text){
+    return text;
+}
+

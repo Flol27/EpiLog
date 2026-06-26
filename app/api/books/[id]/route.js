@@ -11,7 +11,7 @@ export async function GET(request, { params }) {
 
         const { id } = await params;
 
-        const book = db.prepare('SELECT b.id, b.isbn, b.title FROM books b GROUP BY b.id WHERE b.id = ?').get(id);
+        const book = db.prepare('SELECT b.id, b.isbn, b.title FROM books b WHERE b.id = ?').get(id);
 
         if (!book) return NextResponse.json({ error: 'Buch nicht gefunden', id }, { status: 404 });
 
