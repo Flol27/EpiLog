@@ -1,53 +1,84 @@
 import { NextResponse } from 'next/server';
-import db from '@/app/lib/db';
+import { prisma } from "@/lib/prisma";
 import { authorized } from '@/app/lib/auth';
 import * as response from '@/app/lib/response';
+import * as tools from '@/app/lib/tools';
 
 
-export async function GET() {
-    try {
-        if (!authorized('user')) return response.NOTAUTHORIZED;
+export async function GET(){
+    try{
 
-        const books = db.prepare('SELECT b.id, b.isbn, b.title FROM books b GROUP BY b.id').all();
-        return NextResponse.json(books, { status: 200 });
+        if (!authorized('user')) {return response.NOTAUTHORIZED;}
 
-    } catch (error) {
+        const books = await prisma.book.findMany({
+            select: {
+                id:    true,
+                isbn:  true,
+                title: true
+            }
+        });
+
+        return NextResponse.json({books:books}, { status: 200 });
+
+    } catch(error){
         return NextResponse.json(
-            { error: 'Fehler beim Abrufen der Daten', message: error.message },
+            {
+                description: 'Fehler beim Abrufen der Nutzerdaten',
+                error: error.message
+            },
             { status: 500 }
         );
     }
 }
 
-export async function POST(request) {
-    try {
+export async function POST(request){
+    try{
 
-        if (!authorized('user')) return response.NOTAUTHORIZED;
+        if (!authorized('user')) {return response.NOTAUTHORIZED;}
 
-        const { isbn, title} = await request.json();
+        const { isbn, title } = await request.json();
 
         if (!isbn) {
             return NextResponse.json(
-                { error: 'ISBN ist erforderlich' },
+                { description: 'ISBN ist erforderlich' },
                 { status: 400 }
             );
         }
 
-        const result = db.prepare('INSERT INTO books (isbn, title) VALUES (?, ?)').run(isbn, title);
+        if(!tools.checkISBN(isbn))       return response.WRONGDATA("ISBN überprüfen",   isbn);
+        // Braucht man nicht
+        // if(!tools.checkName(title))     return response.WRONGDATA("Username überprüfen", title);
 
-        const book = db.prepare('SELECT b.id, b.isbn, b.title FROM books b WHERE b.id = ?').get(result.lastInsertRowid);
+        const response = await prisma.book.create({
+            data:{
+                isbn:  isbn,
+                title: title
+            }
+        });
+
+        const book = await prisma.book.findUnique({
+            where: {id:response.id},
+            select: {
+                id:    true,
+                isbn:  true,
+                title: true
+            }
+        });
 
         return NextResponse.json(
             {
-                message: 'Buch erfolgreich angelegt',
-                book
+                description: 'Buch erfolgreich angelegt',
+                book:book
             },
             { status: 201 }
         );
 
-    } catch (error) {
+    } catch(error){
         return NextResponse.json(
-            { error: 'Fehler beim Erstellen des Buches', message: error.message },
+            {
+                description: 'Fehler beim Abrufen der Buchdaten',
+                error: error.message
+            },
             { status: 500 }
         );
     }

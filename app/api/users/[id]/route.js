@@ -1,27 +1,38 @@
 import { NextResponse } from 'next/server';
+import { prisma } from "@/lib/prisma";
 import * as argon2 from 'argon2';
-import db from '@/app/lib/db';
 import { authorized } from '@/app/lib/auth';
 import * as response from '@/app/lib/response';
 import * as tools from '@/app/lib/tools';
 
 
-export async function GET(request, { params }) {
-    try {
+export async function GET(request, { params }){
+    try{
 
         if (!authorized('admin')) {return response.NOTAUTHORIZED;}
 
         const { id } = await params;
+        const u_id = parseInt(id, 10);
 
-        const user = db.prepare('SELECT id, email, username, firstname, lastname FROM users WHERE id = ?').get(id);
+        const user = await prisma.user.findUnique({
+            where: { id:u_id },
+            select: {
+                id:        true,
+                email:     true,
+                username:  true,
+                firstname: true,
+                lastname:  true,
+                role:      true
+            }
+        });
 
-        if(!user) return NextResponse.json({error:"User nicht gefunden", id:id}, {status:400});
-        return NextResponse.json(user, { status: 200 });
+        return NextResponse.json({user:user},{ status: 200 });
 
-    } catch (error) {
+    } catch(error){
         return NextResponse.json(
-            { error: 'Fehler beim Abrufen der Nutzerdaten',
-                message: error.message
+            {
+                description: 'Fehler beim Abrufen der Nutzerdaten',
+                error: error.message
             },
             { status: 500 }
         );
@@ -38,64 +49,84 @@ export async function PUT(request, { params }) {
         else {return response.NOTAUTHORIZED;}
 
         const { id } = await params;
+        const u_id = parseInt(id, 10);
         const { email, password, username, firstname, lastname, role } = await request.json();
 
-        let fields = [];
-        let values = [];
 
-        // Check fields
-        if (tools.checkEmail(email))        { fields.push('email = ?');         values.push(email); }
-        if (tools.checkPassword(password))  { fields.push('password = ?');      values.push(await argon2.hash(password)); }
-        if (tools.checkUsername(username))  { fields.push('username = ?');      values.push(username); }
-        if (tools.checkName(firstname))     { fields.push('firstname = ?');     values.push(firstname); }
-        if (tools.checkName(lastname))      { fields.push('lastname = ?');      values.push(lastname); }
-        if (tools.checkRole(role) && admin) { fields.push('role = ?'); values.push(role); }
+        // Dynamisches Update-Objekt aufbauen
+        const data = {};
+        if (tools.checkEmail(email))        { data.email     = email; }
+        if (tools.checkPassword(password))  { data.password  = await argon2.hash(password); }
+        if (tools.checkUsername(username))  { data.username  = username; }
+        if (tools.checkName(firstname))     { data.firstname = firstname; }
+        if (tools.checkName(lastname))      { data.lastname  = lastname; }
+        if (tools.checkRole(role) && admin) { data.role      = role; }
+
+        if(Object.keys(data).length === 0) return NextResponse.json({description: 'Keine Daten, oder nicht genug Rechte.'}, { status: 400 });
 
 
-
-        if(fields.length === 0) return NextResponse.json({error: 'Keine Daten, oder nicht genug Rechte.'},{ status: 400 });
-
-        const result = db.prepare(`UPDATE users SET ${fields.join(", ")} WHERE id = ?`).run(...values, id);
-
-        if(result.changes == 0) return NextResponse.json({error: 'Nicht gefunden.', id:id},{ status: 404 });
-
-        const user = db.prepare('SELECT id, email, username, firstname, lastname, role FROM users WHERE id = ?').get(id);
+        const user = await prisma.user.update({
+            where: { id: u_id },
+            data,
+            select: {
+                id:        true,
+                email:     true,
+                username:  true,
+                firstname: true,
+                lastname:  true,
+                role:      true,
+            }
+        });
 
         return NextResponse.json(
             {
-                message: 'Nutzer erfolgreich geändert',
-                user
+                description: 'Nutzer erfolgreich geändert',
+                user:user
             },
             { status: 201 }
         );
 
     } catch (error) {
+        if (error.code === 'P2025') {
+            return NextResponse.json({ description: 'Nutzer nicht gefunden.', id: u_id }, { status: 404 });
+        }
         return NextResponse.json(
             {
-                error: 'Fehler beim Erstellen des Nutzers',
-                message: error.message
+                description: 'Fehler beim Erstellen des Nutzers',
+                error: error.message
             },
             { status: 500 }
         );
     }
 }
 
-export async function DELETE(request, { params }) {
-    try {
+export async function DELETE(request, { params }){
+    try{
 
         if (!authorized('admin')) {return response.NOTAUTHORIZED;}
 
         const { id } = await params;
+        const u_id = parseInt(id, 10);
 
-        const stmt = db.prepare('DELETE FROM users WHERE id = ?').run(id);
+        const user = await prisma.user.delete({
+            where: { id:u_id },
+            select: {
+                id:        true,
+                email:     true,
+                username:  true,
+                firstname: true,
+                lastname:  true,
+                role:      true
+            }
+        });
 
-        if(stmt.changes < 1){return NextResponse.json({ error:"Kein User gefunden"}, { status: 400 });}
-        return NextResponse.json({message:"User gelöscht"}, { status: 200 });
+        return NextResponse.json({ description:"Nutzer gelöscht", user:user}, { status: 200 });
 
-    } catch (error) {
+    } catch(error){
         return NextResponse.json(
-            { error: 'Fehler beim Löschen des Nutzers',
-                message: error.message
+            {
+                description: 'Fehler beim Löschen des Nutzers',
+                error: error.message
             },
             { status: 500 }
         );

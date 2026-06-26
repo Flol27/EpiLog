@@ -12,16 +12,16 @@ export async function GET(request, { params }) {
         const { id, b_id } = await params;
 
         const user = db.prepare('SELECT u.id, u.username FROM users u WHERE u.id = ?').get(id);
-        if(!user) return NextResponse.json({ error: 'User nicht gefunden', id }, { status: 404 });
+        if(!user) return NextResponse.json({ description: 'User nicht gefunden', id }, { status: 404 });
 
         const book = db.prepare('SELECT * FROM book_user LEFT JOIN books b ON b_id=b.id WHERE u_id = ? AND b_id = ?').get(id, b_id);
-        if (!book) return NextResponse.json({ error: 'Keine Bücher', u_id:id }, { status: 404 });
+        if (!book) return NextResponse.json({ description: 'Keine Bücher', u_id:id }, { status: 404 });
 
         return NextResponse.json({user:user, book:book}, { status: 200 });
 
     } catch (error) {
         return NextResponse.json(
-            { error: 'Fehler beim Abrufen der Daten', message: error.message },
+            { description: 'Fehler beim Abrufen der Daten', error: error.message },
             { status: 500 }
         );
     }
@@ -57,15 +57,15 @@ export async function PUT(request, { params }) {
 
         return NextResponse.json(
             {
-                message: 'Daten erfolgreich geändert',
-                book
+                description: 'Daten erfolgreich geändert',
+                book:book
             },
             { status: 201 }
         );
 
     } catch (error) {
         return NextResponse.json(
-            { error: 'Fehler beim Hinzufügen des Buches', message: error.message },
+            { description: 'Fehler beim Hinzufügen des Buches', error: error.message },
             { status: 500 }
         );
     }
@@ -79,14 +79,14 @@ export async function DELETE(request, { params }) {
 
         const result = db.prepare('DELETE FROM book_user WHERE u_id = ? AND b_id = ?').run(id, b_id);
         if (result.changes === 0) {
-            return NextResponse.json({ error: 'Buch oder User nicht gefunden.' }, { status: 404 });
+            return NextResponse.json({ description: 'Buch oder User nicht gefunden.' }, { status: 404 });
         }
 
         return NextResponse.json({ message: 'Buch entfernt.' }, { status: 200 });
 
     } catch (error) {
         return NextResponse.json(
-            { error: 'Fehler beim Abrufen der Daten', message: error.message },
+            { description: 'Fehler beim Abrufen der Daten', error: error.message },
             { status: 500 }
         );
     }

@@ -1,25 +1,35 @@
 import { NextResponse } from 'next/server';
-import db from '@/app/lib/db';
+import { prisma } from "@/lib/prisma";
 import { authorized } from '@/app/lib/auth';
 import * as response from '@/app/lib/response';
 import * as tools from '@/app/lib/tools';
 
 
-export async function GET(request, { params }) {
-    try {
-        if (!authorized('user')) return response.NOTAUTHORIZED;
+export async function GET(request, { params }){
+    try{
+
+        if (!authorized('user')) {return response.NOTAUTHORIZED;}
 
         const { id } = await params;
+        const b_id = parseInt(id, 10);
 
-        const book = db.prepare('SELECT b.id, b.isbn, b.title FROM books b WHERE b.id = ?').get(id);
+        const book = await prisma.book.findUnique({
+            where: { id:b_id },
+            select: {
+                id:    true,
+                isbn:  true,
+                title: true
+            }
+        });
 
-        if (!book) return NextResponse.json({ error: 'Buch nicht gefunden', id }, { status: 404 });
+        return NextResponse.json({book:book},{ status: 200 });
 
-        return NextResponse.json(book, { status: 200 });
-
-    } catch (error) {
+    } catch(error){
         return NextResponse.json(
-            { error: 'Fehler beim Abrufen der Daten', message: error.message },
+            {
+                description: 'Fehler beim Abrufen der Nutzerdaten',
+                error: error.message
+            },
             { status: 500 }
         );
     }
@@ -27,58 +37,79 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
     try {
-        if (!authorized('user')) return response.NOTAUTHORIZED;
+
+        if (!authorized('user')) {return response.NOTAUTHORIZED;}
 
         const { id } = await params;
+        const b_id = parseInt(id, 10);
         const { isbn, title } = await request.json();
 
-        const fields = [];
-        const values = [];
 
-        if (tools.checkName(isbn))     { fields.push('isbn = ?');     values.push(isbn); }
-        if (tools.checkName(title))        { fields.push('title = ?');        values.push(title); }
+        // Dynamisches Update-Objekt aufbauen
+        const data = {};
+        if (tools.checkEmail(isbn))        { data.isbn     = isbn; }
+        if (tools.checkPassword(title))    { data.title    = title; }
 
-        if (fields.length === 0) {
-            return NextResponse.json({ error: 'Keine gültigen Felder zum Aktualisieren.' }, { status: 400 });
-        }
+        if(Object.keys(data).length === 0) return NextResponse.json({description: 'Keine Daten, oder nicht genug Rechte.'}, { status: 400 });
 
-        const result = db.prepare(`UPDATE books SET ${fields.join(', ')} WHERE id = ?`).run(...values, id);
-        if (result.changes === 0) {
-            return NextResponse.json({ error: 'Buch nicht gefunden.', id }, { status: 404 });
-        }
 
-        const book = db.prepare('SELECT b.id, b.isbn, b.title FROM books b WHERE b.id = ?').get(id);
+        const book = await prisma.book.update({
+            where: { id: b_id },
+            data,
+            select: {
+                id:    true,
+                isbn:  true,
+                title: true
+            }
+        });
 
         return NextResponse.json(
-            { message: 'Buch erfolgreich geändert', book },
-            { status: 200 }
+            {
+                description: 'Buch erfolgreich geändert',
+                book:book
+            },
+            { status: 201 }
         );
 
     } catch (error) {
+        if (error.code === 'P2025') {
+            return NextResponse.json({ description: 'Buch nicht gefunden.', id: u_id }, { status: 404 });
+        }
         return NextResponse.json(
-            { error: 'Fehler beim Verändern des Buches', message: error.message },
+            {
+                description: 'Fehler beim Erstellen des Buches',
+                error: error.message
+            },
             { status: 500 }
         );
     }
 }
 
+export async function DELETE(request, { params }){
+    try{
 
-export async function DELETE(request, { params }) {
-    try {
-        if (!authorized('user')) return response.NOTAUTHORIZED;
+        if (!authorized('admin')) {return response.NOTAUTHORIZED;}
 
         const { id } = await params;
+        const b_id = parseInt(id, 10);
 
-        const result = db.prepare('DELETE FROM books WHERE id = ?').run(id);
-        if (result.changes === 0) {
-            return NextResponse.json({ error: 'Buch nicht gefunden.' }, { status: 404 });
-        }
+        const book = await prisma.book.delete({
+            where: { id:b_id },
+            select: {
+                id:    true,
+                isbn:  true,
+                title: true
+            }
+        });
 
-        return NextResponse.json({ message: 'Buch gelöscht.' }, { status: 200 });
+        return NextResponse.json({ description:"Buch gelöscht", book:book}, { status: 200 });
 
-    } catch (error) {
+    } catch(error){
         return NextResponse.json(
-            { error: 'Fehler beim Löschen des Buches', message: error.message },
+            {
+                description: 'Fehler beim Löschen des Buches',
+                error: error.message
+            },
             { status: 500 }
         );
     }
