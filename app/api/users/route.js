@@ -6,10 +6,10 @@ import * as response from '@/app/lib/response';
 import * as tools from '@/app/lib/tools';
 
 
-export async function GET(){
+export async function GET(request){
     try{
 
-        if (!authorized('user')) {return response.NOTAUTHORIZED;}
+        if (!await authorized('user', request)) {return response.NOTAUTHORIZED();}
 
         const users = await prisma.user.findMany({
             omit: { //alles ausser ...

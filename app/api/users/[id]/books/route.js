@@ -8,7 +8,7 @@ import * as tools from '@/app/lib/tools';
 export async function GET(request, { params }){
     try{
 
-        if (!authorized('user')) {return response.NOTAUTHORIZED;}
+        if (!await authorized('user', request)) {return response.NOTAUTHORIZED();}
 
         const { id } = await params;
         const u_id = parseInt(id, 10);
@@ -46,7 +46,7 @@ export async function GET(request, { params }){
 export async function POST(request, { params }){
     try{
 
-        if (!authorized('user')) {return response.NOTAUTHORIZED;}
+        if (!await authorized('user', request)) {return response.NOTAUTHORIZED();}
 
         const { b_id } = await request.json();
         const { id } = await params;

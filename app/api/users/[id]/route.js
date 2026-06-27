@@ -9,7 +9,7 @@ import * as tools from '@/app/lib/tools';
 export async function GET(request, { params }){
     try{
 
-        if (!authorized('admin')) {return response.NOTAUTHORIZED;}
+        if (!await authorized('user', request)) {return response.NOTAUTHORIZED();}
 
         const { id } = await params;
         const userId = parseInt(id, 10);
@@ -39,9 +39,9 @@ export async function PUT(request, { params }) {
 
         let admin = false;
 
-        if (authorized('admin')) {admin = true;}
-        else if (authorized('user')) {admin = false;}
-        else {return response.NOTAUTHORIZED;}
+        if (await authorized('admin', request)) {admin = true;}
+        else if (await authorized('user', request)) {admin = false;}
+        else {return response.NOTAUTHORIZED();}
 
         const { id } = await params;
         const userId = parseInt(id, 10);
@@ -101,7 +101,7 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }){
     try{
 
-        if (!authorized('admin')) {return response.NOTAUTHORIZED;}
+        if (!await authorized('admin', request)) {return response.NOTAUTHORIZED();}
 
         const { id } = await params;
         const userId = parseInt(id, 10);

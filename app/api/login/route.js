@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from "@/lib/prisma";
 import * as argon2 from 'argon2';
+import { authorize } from '@/app/lib/auth';
+
 
 
 export async function POST(request){
@@ -22,7 +24,7 @@ export async function POST(request){
         }
 
         const user = await prisma.user.findUnique({
-            where: email ? { email:email } : { username:username },
+            where: email ? { email } : { username },
             select: {
                 id:        true,
                 password:  true,
@@ -30,16 +32,22 @@ export async function POST(request){
             }
         });
 
+        if(!user) { return NextResponse.json({ description:"Nutzer nicht gefunden"}, { status: 404 })}
+
         const passwordCorrect = await argon2.verify(user.password, password);
 
 
         if(passwordCorrect){
-            return NextResponse.json(
+            const token = await authorize(user);
+
+            const response = NextResponse.json(
                 {
                     description: 'Angemeldet'
                 },
                 { status: 200 }
             );
+            response.cookies.set('session', token, { httpOnly: true });
+            return response;
         } else {
             return NextResponse.json(
                 {
