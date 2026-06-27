@@ -5,7 +5,21 @@ import { authorized } from '@/app/lib/auth';
 import * as response from '@/app/lib/response';
 import * as tools from '@/app/lib/tools';
 
-
+/**
+ * @swagger
+ * /api/users:
+ *   get:
+ *     summary: Alle Nutzer abrufen
+ *     tags:
+ *       - Users
+ *     responses:
+ *       200:
+ *         description: Liste aller Nutzer
+ *       401:
+ *         description: Nicht autorisiert
+ *       500:
+ *         description: Serverfehler
+ */
 export async function GET(request){
     try{
 
@@ -22,14 +36,56 @@ export async function GET(request){
     } catch(error){
         return NextResponse.json(
             {
-                description: 'Fehler beim Abrufen der Nutzerdaten',
-                error: error.message
+                error: 'Fehler beim Abrufen der Nutzerdaten',
+                message: error.message
             },
             { status: 500 }
         );
     }
 }
 
+
+/**
+ * @swagger
+ * /api/users:
+ *   post:
+ *     summary: Nutzer anlegen
+ *     tags:
+ *       - Users
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - username
+ *               - password
+ *               - firstname
+ *             properties:
+ *               email:
+ *                 type: string
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               firstname:
+ *                 type: string
+ *               lastname:
+ *                 type: string
+ *               quote:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Nutzer erfolgreich angelegt
+ *       400:
+ *         description: Pflichtfelder fehlen
+ *       500:
+ *         description: Serverfehler
+ */
 export async function POST(request){
     try{
 
@@ -61,7 +117,6 @@ export async function POST(request){
 
         return NextResponse.json(
             {
-                description: 'Nutzer erfolgreich angelegt',
                 user:user
             },
             { status: 201 }
@@ -70,8 +125,8 @@ export async function POST(request){
     } catch(error){
         return NextResponse.json(
             {
-                description: 'Fehler beim Abrufen der Nutzerdaten',
-                error: error
+                error: 'Fehler beim Abrufen der Nutzerdaten',
+                message: error.message
             },
             { status: 500 }
         );

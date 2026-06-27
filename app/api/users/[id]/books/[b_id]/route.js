@@ -5,6 +5,31 @@ import * as response from '@/app/lib/response';
 import * as tools from '@/app/lib/tools';
 
 
+/**
+ * @swagger
+ * /api/users/{id}/books/{b_id}:
+ *   get:
+ *     summary: Einzelnes Buch eines Nutzers abrufen
+ *     tags: [Reading]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: b_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Nutzer mit Buch
+ *       401:
+ *         description: Nicht autorisiert
+ *       500:
+ *         description: Serverfehler
+ */
 export async function GET(request, { params }){
     try{
 
@@ -37,14 +62,60 @@ export async function GET(request, { params }){
     } catch(error){
         return NextResponse.json(
             {
-                description: 'Fehler beim Abrufen der Nutzerdaten',
-                error: error.message
+                error: 'Fehler beim Abrufen der Nutzerdaten',
+                message: error.message
             },
             { status: 500 }
         );
     }
 }
 
+
+/**
+ * @swagger
+ * /api/users/{id}/books/{b_id}:
+ *   put:
+ *     summary: Lesedaten eines Buches aktualisieren
+ *     tags: [Reading]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: b_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               pages_read:
+ *                 type: integer
+ *               start_date:
+ *                 type: string
+ *               read_date:
+ *                 type: string
+ *               rating:
+ *                 type: integer
+ *               rating_text:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Lesedaten aktualisiert
+ *       400:
+ *         description: Keine gültigen Daten
+ *       401:
+ *         description: Nicht autorisiert
+ *       404:
+ *         description: Eintrag nicht gefunden
+ *       500:
+ *         description: Serverfehler
+ */
 export async function PUT(request, { params }) {
     try {
 
@@ -53,17 +124,16 @@ export async function PUT(request, { params }) {
         const { id, b_id } = await params;
         const userId = parseInt(id, 10);
         const bookId = parseInt(b_id, 10);
-        const { pages_read, readstreak_edit_date, start_date, read_date, rating, rating_text } = await request.json();
+        const { pagesRead, startDate, readDate, rating, ratingText } = await request.json();
 
 
         // Dynamisches Update-Objekt aufbauen
         const data = {};
-        if (tools.checkNum(pages_read))              { data.pagesRead          = pages_read; }
-        if (tools.checkDate(readstreak_edit_date))   { data.readstreakEditDate = readstreak_edit_date; }
-        if (tools.checkDate(start_date))             { data.startDate          = start_date; }
-        if (tools.checkDate(read_date))              { data.readDate           = read_date; }
+        if (tools.checkNum(pagesRead))              { data.pagesRead          = pagesRead; }
+        if (tools.checkDate(startDate))             { data.startDate          = startDate; }
+        if (tools.checkDate(readDate))              { data.readDate           = readDate; }
         if (tools.checkNum(rating))                  { data.rating             = rating; }
-        if (tools.checkText(rating_text))            { data.ratingText         = rating_text; }
+        if (tools.checkText(ratingText))            { data.ratingText         = ratingText; }
 
 
         if(Object.keys(data).length === 0) return NextResponse.json({description: 'Keine oder falsche Daten'}, { status: 400 });
@@ -81,7 +151,6 @@ export async function PUT(request, { params }) {
 
         return NextResponse.json(
             {
-                description: 'Daten erfolgreich geändert',
                 reading:reading
             },
             { status: 201 }
@@ -89,18 +158,46 @@ export async function PUT(request, { params }) {
 
     } catch (error) {
         if (error.code === 'P2025') {
-            return NextResponse.json({ description: 'Daten nicht gefunden.'}, { status: 404 });
+            return NextResponse.json({ error: 'Daten nicht gefunden.'}, { status: 404 });
         }
         return NextResponse.json(
             {
-                description: 'Fehler beim Erstellen der Daten',
-                error: error.message
+                error: 'Fehler beim Erstellen der Daten',
+                message: error.message
             },
             { status: 500 }
         );
     }
 }
 
+
+/**
+ * @swagger
+ * /api/users/{id}/books/{b_id}:
+ *   delete:
+ *     summary: Buch von Nutzer entfernen
+ *     tags: [Reading]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: b_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Buch entfernt
+ *       401:
+ *         description: Nicht autorisiert
+ *       404:
+ *         description: Eintrag nicht gefunden
+ *       500:
+ *         description: Serverfehler
+ */
 export async function DELETE(request, { params }){
     try{
 
@@ -121,7 +218,6 @@ export async function DELETE(request, { params }){
 
         return NextResponse.json(
             {
-                description:"Buch entfernt",
                 userId:userId,
                 bookId:bookId
             },
@@ -133,7 +229,7 @@ export async function DELETE(request, { params }){
         if (error.code === 'P2025') {
             return NextResponse.json(
                     {
-                        description:"Nutzer hat das Buch garnicht",
+                        error:"Nutzer hat das Buch garnicht",
                         userId:userId,
                         bookId:bookId
                     },
@@ -142,8 +238,8 @@ export async function DELETE(request, { params }){
         }
         return NextResponse.json(
             {
-                description: 'Fehler beim Entfernen des Buches',
-                error: error.message
+                error: 'Fehler beim Entfernen des Buches',
+                message: error.message
             },
             { status: 500 }
         );

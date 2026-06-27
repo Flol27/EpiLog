@@ -5,7 +5,26 @@ import { authorized } from '@/app/lib/auth';
 import * as response from '@/app/lib/response';
 import * as tools from '@/app/lib/tools';
 
-
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   get:
+ *     summary: Nutzer abrufen
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Nutzer
+ *       401:
+ *         description: Nicht autorisiert
+ *       500:
+ *         description: Serverfehler
+ */
 export async function GET(request, { params }){
     try{
 
@@ -26,14 +45,63 @@ export async function GET(request, { params }){
     } catch(error){
         return NextResponse.json(
             {
-                description: 'Fehler beim Abrufen der Nutzerdaten',
-                error: error.message
+                error: 'Fehler beim Abrufen der Nutzerdaten',
+                message: error.message
             },
             { status: 500 }
         );
     }
 }
 
+
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   put:
+ *     summary: Nutzer aktualisieren
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               firstname:
+ *                 type: string
+ *               lastname:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *               quote:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *               readStreak:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Nutzer aktualisiert
+ *       400:
+ *         description: Keine gültigen Daten
+ *       401:
+ *         description: Nicht autorisiert
+ *       404:
+ *         description: Nutzer nicht gefunden
+ *       500:
+ *         description: Serverfehler
+ */
 export async function PUT(request, { params }) {
     try {
 
@@ -64,7 +132,7 @@ export async function PUT(request, { params }) {
 
 
         if(Object.keys(data).length === 0){
-            return NextResponse.json({description: 'Keine oder falsche Daten oder nicht genug Rechte.'}, { status: 400 });
+            return NextResponse.json({error: 'Keine oder falsche Daten oder nicht genug Rechte.'}, { status: 400 });
         }
 
 
@@ -78,7 +146,6 @@ export async function PUT(request, { params }) {
 
         return NextResponse.json(
             {
-                description: 'Nutzer erfolgreich geändert',
                 user:user
             },
             { status: 201 }
@@ -86,18 +153,39 @@ export async function PUT(request, { params }) {
 
     } catch (error) {
         if (error.code === 'P2025') {
-            return NextResponse.json({ description: 'Nutzer nicht gefunden.'}, { status: 404 });
+            return NextResponse.json({ error: 'Nutzer nicht gefunden.'}, { status: 404 });
         }
         return NextResponse.json(
             {
-                description: 'Fehler beim Erstellen des Nutzers',
-                error: error.message
+                error: 'Fehler beim Erstellen des Nutzers',
+                message: error.message
             },
             { status: 500 }
         );
     }
 }
 
+
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   delete:
+ *     summary: Nutzer löschen
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Nutzer gelöscht
+ *       401:
+ *         description: Nicht autorisiert
+ *       500:
+ *         description: Serverfehler
+ */
 export async function DELETE(request, { params }){
     try{
 
@@ -113,13 +201,13 @@ export async function DELETE(request, { params }){
             }
         });
 
-        return NextResponse.json({ description:"Nutzer gelöscht", user:user}, { status: 200 });
+        return NextResponse.json({ user:user }, { status: 200 });
 
     } catch(error){
         return NextResponse.json(
             {
-                description: 'Fehler beim Löschen des Nutzers',
-                error: error.message
+                error: 'Fehler beim Löschen des Nutzers',
+                message: error.message
             },
             { status: 500 }
         );

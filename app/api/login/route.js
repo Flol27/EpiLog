@@ -4,7 +4,39 @@ import * as argon2 from 'argon2';
 import { authorize } from '@/app/lib/auth';
 
 
-
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Einloggen
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Erfolgreich eingeloggt
+ *       400:
+ *         description: Pflichtfelder fehlen
+ *       401:
+ *         description: Falsches Passwort
+ *       404:
+ *         description: Nutzer nicht gefunden
+ *       500:
+ *         description: Serverfehler
+ */
 export async function POST(request){
     try{
 
@@ -12,13 +44,13 @@ export async function POST(request){
 
         if (!email && !username) {
             return NextResponse.json(
-                { description: 'E-Mail oder Username sind erforderlich' },
+                { error: 'E-Mail oder Username sind erforderlich' },
                 { status: 400 }
             );
         }
         if (!password) {
             return NextResponse.json(
-                { description: 'Passwort ist erforderlich' },
+                { error: 'Passwort ist erforderlich' },
                 { status: 400 }
             );
         }
@@ -32,7 +64,7 @@ export async function POST(request){
             }
         });
 
-        if(!user) { return NextResponse.json({ description:"Nutzer nicht gefunden"}, { status: 404 })}
+        if(!user) { return NextResponse.json({ error:"Nutzer nicht gefunden"}, { status: 404 })}
 
         const passwordCorrect = await argon2.verify(user.password, password);
 
@@ -40,18 +72,13 @@ export async function POST(request){
         if(passwordCorrect){
             const token = await authorize(user);
 
-            const response = NextResponse.json(
-                {
-                    description: 'Angemeldet'
-                },
-                { status: 200 }
-            );
+            const response = NextResponse.json({ status: 200 });
             response.cookies.set('session', token, { httpOnly: true });
             return response;
         } else {
             return NextResponse.json(
                 {
-                    description: 'Falsches Passwort'
+                    error: 'Falsches Passwort'
                 },
                 { status: 401 }
             );
@@ -61,8 +88,8 @@ export async function POST(request){
     } catch(error){
         return NextResponse.json(
             {
-                description: 'Fehler beim Abrufen der Nutzerdaten',
-                error: error.message
+                error: 'Fehler beim Abrufen der Nutzerdaten',
+                message: error.message
             },
             { status: 500 }
         );

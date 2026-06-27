@@ -5,6 +5,20 @@ import * as response from '@/app/lib/response';
 import * as tools from '@/app/lib/tools';
 
 
+/**
+ * @swagger
+ * /api/books:
+ *   get:
+ *     summary: Alle Bücher abrufen
+ *     tags: [Books]
+ *     responses:
+ *       200:
+ *         description: Liste aller Bücher
+ *       401:
+ *         description: Nicht autorisiert
+ *       500:
+ *         description: Serverfehler
+ */
 export async function GET(request){
     try{
 
@@ -23,14 +37,44 @@ export async function GET(request){
     } catch(error){
         return NextResponse.json(
             {
-                description: 'Fehler beim Abrufen der Nutzerdaten',
-                error: error.message
+                error: 'Fehler beim Abrufen der Nutzerdaten',
+                message: error.message
             },
             { status: 500 }
         );
     }
 }
 
+
+/**
+ * @swagger
+ * /api/books:
+ *   post:
+ *     summary: Buch anlegen
+ *     tags: [Books]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - isbn
+ *             properties:
+ *               isbn:
+ *                 type: string
+ *               title:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Buch angelegt
+ *       400:
+ *         description: Ungültige Daten
+ *       401:
+ *         description: Nicht autorisiert
+ *       500:
+ *         description: Serverfehler
+ */
 export async function POST(request){
     try{
 
@@ -40,34 +84,22 @@ export async function POST(request){
 
         if (!isbn) {
             return NextResponse.json(
-                { description: 'ISBN ist erforderlich' },
+                { error: 'ISBN ist erforderlich' },
                 { status: 400 }
             );
         }
 
         if(!tools.checkISBN(isbn))       return response.WRONGDATA("ISBN überprüfen",   isbn);
-        // Braucht man nicht
-        // if(!tools.checkName(title))     return response.WRONGDATA("Username überprüfen", title);
 
-        const response = await prisma.book.create({
+        const book = await prisma.book.create({
             data:{
                 isbn:  isbn,
                 title: title
             }
         });
 
-        const book = await prisma.book.findUnique({
-            where: {id:response.id},
-            select: {
-                id:    true,
-                isbn:  true,
-                title: true
-            }
-        });
-
         return NextResponse.json(
             {
-                description: 'Buch erfolgreich angelegt',
                 book:book
             },
             { status: 201 }
@@ -76,8 +108,8 @@ export async function POST(request){
     } catch(error){
         return NextResponse.json(
             {
-                description: 'Fehler beim Abrufen der Buchdaten',
-                error: error.message
+                error: 'Fehler beim Abrufen der Buchdaten',
+                message: error.message
             },
             { status: 500 }
         );

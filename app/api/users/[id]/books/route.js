@@ -2,9 +2,28 @@ import { NextResponse } from 'next/server';
 import { prisma } from "@/lib/prisma";
 import { authorized } from '@/app/lib/auth';
 import * as response from '@/app/lib/response';
-import * as tools from '@/app/lib/tools';
 
 
+/**
+ * @swagger
+ * /api/users/{id}/books:
+ *   get:
+ *     summary: Bücher eines Nutzers abrufen
+ *     tags: [Reading]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Nutzer mit Büchern
+ *       401:
+ *         description: Nicht autorisiert
+ *       500:
+ *         description: Serverfehler
+ */
 export async function GET(request, { params }){
     try{
 
@@ -35,14 +54,50 @@ export async function GET(request, { params }){
     } catch(error){
         return NextResponse.json(
             {
-                description: 'Fehler beim Abrufen der Nutzerdaten',
-                error: error.message
+                error: 'Fehler beim Abrufen der Nutzerdaten',
+                message: error.message
             },
             { status: 500 }
         );
     }
 }
 
+
+/**
+ * @swagger
+ * /api/users/{id}/books:
+ *   post:
+ *     summary: Buch zu Nutzer hinzufügen
+ *     tags: [Reading]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - b_id
+ *             properties:
+ *               b_id:
+ *                 type: integer
+ *     responses:
+ *       201:
+ *         description: Buch hinzugefügt
+ *       400:
+ *         description: Pflichtfelder fehlen
+ *       401:
+ *         description: Nicht autorisiert
+ *       404:
+ *         description: Nutzer oder Buch nicht gefunden
+ *       500:
+ *         description: Serverfehler
+ */
 export async function POST(request, { params }){
     try{
 
@@ -54,7 +109,7 @@ export async function POST(request, { params }){
 
         if (!u_id || !b_id) {
             return NextResponse.json(
-                { description: 'Nutzer und Buch sind erforderlich', u_id:u_id, b_id:b_id },
+                { error: 'Nutzer und Buch sind erforderlich', u_id:u_id, b_id:b_id },
                 { status: 400 }
             );
         }
@@ -62,8 +117,8 @@ export async function POST(request, { params }){
         const user = await prisma.user.findUnique({ where: { id: u_id } })
         const book = await prisma.book.findUnique({ where: { id: b_id } })
 
-        if (!user) return NextResponse.json({ description: 'Nutzer nicht gefunden.' }, { status: 404 })
-        if (!book) return NextResponse.json({ description: 'Buch nicht gefunden.' }, { status: 404 })
+        if (!user) return NextResponse.json({ error: 'Nutzer nicht gefunden.' }, { status: 404 })
+        if (!book) return NextResponse.json({ error: 'Buch nicht gefunden.' }, { status: 404 })
 
 
         const response = await prisma.bookUser.upsert({
@@ -81,7 +136,6 @@ export async function POST(request, { params }){
 
         return NextResponse.json(
             {
-                description: 'Buch erfolgreich hinzugefügt',
                 user:response
             },
             { status: 201 }
@@ -90,8 +144,8 @@ export async function POST(request, { params }){
     } catch(error){
         return NextResponse.json(
             {
-                description: 'Fehler beim Hinzufügen des Buches',
-                error: error.message
+                error: 'Fehler beim Hinzufügen des Buches',
+                message: error.message
             },
             { status: 500 }
         );
