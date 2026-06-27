@@ -21,14 +21,19 @@ model Book {
 }
 
 model User {
-  id         Int     @id @default(autoincrement())
-  email      String  @unique
-  username   String  @unique
-  password   String
-  role       String?
-  firstname  String
-  lastname   String?
-  readstreak Int?
+  id                  Int       @id @default(autoincrement())
+  email               String    @unique
+  username            String    @unique
+  password            String
+  role                String    @default("user")
+  firstname           String
+  lastname            String?
+  readStreak          Int       @default(0)
+  readStreakUpdated   DateTime? // Readingstreak update date
+  profilePic          String?
+  status              String?
+  quote               String?
+  createdAt           DateTime  @default(now())
 
   bookUsers  BookUser[]
 }
@@ -37,7 +42,6 @@ model BookUser {
   userId             Int
   bookId             Int
   pagesRead          Int?
-  readstreakEditDate DateTime?
   startDate          DateTime?
   readDate           DateTime?
   rating             Int?

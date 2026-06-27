@@ -12,17 +12,12 @@ export async function GET(request, { params }){
         if (!authorized('admin')) {return response.NOTAUTHORIZED;}
 
         const { id } = await params;
-        const u_id = parseInt(id, 10);
+        const userId = parseInt(id, 10);
 
         const user = await prisma.user.findUnique({
-            where: { id:u_id },
-            select: {
-                id:        true,
-                email:     true,
-                username:  true,
-                firstname: true,
-                lastname:  true,
-                role:      true
+            where: { id:userId },
+            omit: {
+                password: true
             }
         });
 
@@ -49,32 +44,35 @@ export async function PUT(request, { params }) {
         else {return response.NOTAUTHORIZED;}
 
         const { id } = await params;
-        const u_id = parseInt(id, 10);
-        const { email, password, username, firstname, lastname, role } = await request.json();
+        const userId = parseInt(id, 10);
+        const { email, password, username, firstname, lastname, role, readStreak, quote, status } = await request.json();
 
 
         // Dynamisches Update-Objekt aufbauen
         const data = {};
-        if (tools.checkEmail(email))        { data.email     = email; }
-        if (tools.checkPassword(password))  { data.password  = await argon2.hash(password); }
-        if (tools.checkUsername(username))  { data.username  = username; }
-        if (tools.checkName(firstname))     { data.firstname = firstname; }
-        if (tools.checkName(lastname))      { data.lastname  = lastname; }
-        if (tools.checkRole(role) && admin) { data.role      = role; }
+        if (tools.checkEmail(email))        { data.email             = email; }
+        if (tools.checkPassword(password))  { data.password          = await argon2.hash(password); }
+        if (tools.checkUsername(username))  { data.username          = username; }
+        if (tools.checkName(firstname))     { data.firstname         = firstname; }
+        if (tools.checkName(lastname))      { data.lastname          = lastname; }
+        if (tools.checkRole(role) && admin) { data.role              = role; }
+        if (tools.checkText(quote))         { data.quote             = quote; }
+        if (tools.checkText(status))        { data.status            = status; }
+        if (tools.checkNum(readStreak))     { data.readStreak        = readStreak; }
+        if (data.readStreak)                { data.readStreakUpdated = new Date(); }
 
-        if(Object.keys(data).length === 0) return NextResponse.json({description: 'Keine oder falsche Daten oder nicht genug Rechte.'}, { status: 400 });
+
+
+        if(Object.keys(data).length === 0){
+            return NextResponse.json({description: 'Keine oder falsche Daten oder nicht genug Rechte.'}, { status: 400 });
+        }
 
 
         const user = await prisma.user.update({
-            where: { id: u_id },
+            where: { id: userId },
             data,
-            select: {
-                id:        true,
-                email:     true,
-                username:  true,
-                firstname: true,
-                lastname:  true,
-                role:      true,
+            omit: {
+                password: true
             }
         });
 
@@ -106,17 +104,12 @@ export async function DELETE(request, { params }){
         if (!authorized('admin')) {return response.NOTAUTHORIZED;}
 
         const { id } = await params;
-        const u_id = parseInt(id, 10);
+        const userId = parseInt(id, 10);
 
         const user = await prisma.user.delete({
-            where: { id:u_id },
-            select: {
-                id:        true,
-                email:     true,
-                username:  true,
-                firstname: true,
-                lastname:  true,
-                role:      true
+            where: { id:userId },
+            omit: {
+                password: true
             }
         });
 

@@ -11,7 +11,7 @@ export async function initDB() {
                 username:  'admin',
                 password:  await argon2.hash(process.env.ADMIN_PASSWORD!),
                 role:      'admin',
-                firstname: 'Admin',
+                firstname: 'Admin'
             }
         })
         console.log('Admin-User angelegt.')

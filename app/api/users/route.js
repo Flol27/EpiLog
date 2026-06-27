@@ -9,16 +9,11 @@ import * as tools from '@/app/lib/tools';
 export async function GET(){
     try{
 
-        if (!authorized('admin')) {return response.NOTAUTHORIZED;}
+        if (!authorized('user')) {return response.NOTAUTHORIZED;}
 
         const users = await prisma.user.findMany({
-            select: {
-                id:        true,
-                email:     true,
-                username:  true,
-                firstname: true,
-                lastname:  true,
-                role:      true
+            omit: { //alles ausser ...
+                password: true
             }
         });
 
@@ -38,7 +33,7 @@ export async function GET(){
 export async function POST(request){
     try{
 
-        const { email, username, password, firstname, lastname } = await request.json();
+        const { email, username, password, firstname, lastname, quote, status } = await request.json();
 
         if (!email || !username || !password || !firstname) {
             return NextResponse.json(
@@ -47,33 +42,20 @@ export async function POST(request){
             );
         }
 
-        if(!tools.checkEmail(email))       return response.WRONGDATA("E-Mail überprüfen",   email);
-        if(!tools.checkName(username))     return response.WRONGDATA("Username überprüfen", username);
-        if(!tools.checkPassword(password)) return response.WRONGDATA("Passwort überprüfen", password);
-        if(!tools.checkName(firstname))    return response.WRONGDATA("Vorname überprüfen",  firstname);
-        if(!tools.checkName(lastname))     return response.WRONGDATA("Nachname überprüfen", lastname);
+        const data = {};
+        if (tools.checkEmail(email))        { data.email     = email; }
+        if (tools.checkPassword(password))  { data.password  = await argon2.hash(password); }
+        if (tools.checkUsername(username))  { data.username  = username; }
+        if (tools.checkName(firstname))     { data.firstname = firstname; }
+        if (tools.checkName(lastname))      { data.lastname  = lastname; }
+        if (tools.checkText(quote))         { data.quote     = quote; }
+        if (tools.checkText(status))        { data.status    = status; }
 
-        const hash = await argon2.hash(password);
 
-        const response = await prisma.user.create({
-            data:{
-                email:     email,
-                username:  username,
-                password:  hash,
-                firstname: firstname,
-                lastname:  lastname
-            }
-        });
-
-        const user = await prisma.user.findUnique({
-            where: {id:response.id},
-            select: {
-                id:        true,
-                email:     true,
-                username:  true,
-                firstname: true,
-                lastname:  true,
-                role:      true
+        const user = await prisma.user.create({
+            data:data,
+            omit: {
+                password: true
             }
         });
 
@@ -89,7 +71,7 @@ export async function POST(request){
         return NextResponse.json(
             {
                 description: 'Fehler beim Abrufen der Nutzerdaten',
-                error: error.message
+                error: error
             },
             { status: 500 }
         );
