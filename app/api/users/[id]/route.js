@@ -62,7 +62,7 @@ export async function PUT(request, { params }) {
         if (tools.checkName(lastname))      { data.lastname  = lastname; }
         if (tools.checkRole(role) && admin) { data.role      = role; }
 
-        if(Object.keys(data).length === 0) return NextResponse.json({description: 'Keine Daten, oder nicht genug Rechte.'}, { status: 400 });
+        if(Object.keys(data).length === 0) return NextResponse.json({description: 'Keine oder falsche Daten oder nicht genug Rechte.'}, { status: 400 });
 
 
         const user = await prisma.user.update({
@@ -88,7 +88,7 @@ export async function PUT(request, { params }) {
 
     } catch (error) {
         if (error.code === 'P2025') {
-            return NextResponse.json({ description: 'Nutzer nicht gefunden.', id: u_id }, { status: 404 });
+            return NextResponse.json({ description: 'Nutzer nicht gefunden.'}, { status: 404 });
         }
         return NextResponse.json(
             {

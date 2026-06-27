@@ -6,6 +6,7 @@ export const NOTAUTHORIZED = NextResponse.json(
     { status: 401 }
 );
 
+// Falsch die Daten falsch angegeben wurden z.B. (abc@com als EMail)
 export function WRONGDATA(message, item){
     return NextResponse.json(
     {
