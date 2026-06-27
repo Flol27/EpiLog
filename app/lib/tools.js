@@ -4,7 +4,7 @@
  * TODO
  */
 
-// Bei 'undefined' -> false, bei 'null' -> true
+// Bei manchen 'undefined' -> false, bei 'null' -> true !!!! Bei password auf jeden fall nicht, sonst kann man sein Password auf null setzen
 
 export function checkDate(date){
     return date;
@@ -36,5 +36,9 @@ export function checkISBN(isbn){
 
 export function checkNum(num){
     return num;
+}
+
+export function checkText(text){
+    return text;
 }
 

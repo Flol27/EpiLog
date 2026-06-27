@@ -1,8 +1,14 @@
 git clone https://github.com/EUER-REPO
 cd epilog
+cp example.env .env
 npm install
+
+npx prisma generate
+npx prisma migrate dev --name init
+
 npm run dev
 
+###################
 Das npm install machen
 damit installiert man noch node_modules lokal bei sich, 
 weil das ja nicht im Repo ist.
