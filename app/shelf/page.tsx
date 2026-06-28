@@ -181,15 +181,15 @@ export default function Shelf() {
           {/* Bücher Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {filteredBooks.map((book) => (
-              <div key={book.id} onClick={() => setSelectedBook(book) || setIsModalOpen(true)} className="group flex flex-col gap-3 cursor-pointer">
-                {book.coverUrl ? (
-                  <img src={book.coverUrl} alt={book.title} className="w-full aspect-[2/3] object-cover rounded-xl shadow-lg border border-zinc-800 group-hover:border-yellow-400 transition-colors" />
-                ) : (
-                  <div className="w-full aspect-[2/3] bg-zinc-800 rounded-xl shadow-lg border border-zinc-800 group-hover:border-yellow-400 transition-colors flex flex-col items-center justify-center gap-2">
+              <div key={book.id} onClick={() => { setSelectedBook(book); setIsModalOpen(true); }} className="group flex flex-col gap-3 cursor-pointer">
+                  {book.coverUrl ? (
+                  <img src={book.coverUrl} alt={book.title} className="w-full aspect-[2/3] object-cover rounded-xl shadow-lg border border-zinc-800 group-hover:border-yellow-400 transition-colors" />) 
+                  : 
+                  (
+                    <div className="w-full aspect-[2/3] bg-zinc-800 rounded-xl shadow-lg border border-zinc-800 group-hover:border-yellow-400 transition-colors flex flex-col items-center justify-center gap-2">
                     <BookOpen className="w-6 h-6 text-zinc-600" />
                     <span className="text-zinc-500 text-xs font-medium">No Cover</span>
-                  </div>
-                )}
+                  </div>)}
                 <div>
                   <h3 className="text-white font-semibold group-hover:text-yellow-400 transition-colors truncate">{book.title}</h3>
                   <p className="text-zinc-400 text-sm truncate">{book.author}</p>
