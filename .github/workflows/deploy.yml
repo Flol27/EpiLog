@@ -76,7 +76,7 @@ jobs:
         run: |
           ssh -p 2200 -i ~/.ssh/id_rsa \
           ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-          "cd ${{ secrets.TARGET_DIR }} && npx prisma migrate deploy"
+          "cd ${{ secrets.TARGET_DIR }} && node_modules/.bin/prisma migrate deploy"
 
       - name: Restart app via PM2
         run: |
