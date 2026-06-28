@@ -1,9 +1,10 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { authorize } from '@/app/lib/auth'; // <-- Das JWT-Schlüssel-Tool importieren
 
-export async function createSession(userId) {
-    // In der Praxis würdest du hier z.B. ein verschlüsseltes JWT erstellen
-    const sessionToken = `session_for_user_${userId}`;
+export async function createSession(user) {
+    // 1. Hier wird jetzt das ECHTE, sichere JWT generiert!
+    const sessionToken = await authorize(user);
 
     // Cookie im Browser des Nutzers setzen
     const cookieStore = await cookies();
@@ -12,8 +13,9 @@ export async function createSession(userId) {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
+        maxAge: 60 * 60 * 24
     });
 
     // Nutzer auf das geschützte Dashboard schicken
-    redirect('/');
+    redirect('/dashboard');
 }
