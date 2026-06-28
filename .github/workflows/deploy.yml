@@ -60,6 +60,18 @@ jobs:
             ./public/ \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.TARGET_DIR }}/public/
 
+          # 4) Prisma-Ordner mit Settings
+            rsync -avz \
+            -e "ssh -p 2200 -i ~/.ssh/id_rsa" \
+            ./prisma/ \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.TARGET_DIR }}/prisma/
+
+          # 5) Prisma Config (prisma.config.ts)
+            rsync -avz \
+            -e "ssh -p 2200 -i ~/.ssh/id_rsa" \
+            ./prisma.config.ts \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.TARGET_DIR }}/
+
       - name: Run Prisma migrations
         run: |
           ssh -p 2200 -i ~/.ssh/id_rsa \
