@@ -191,7 +191,7 @@ export async function DELETE(request, { params }) {
         return NextResponse.json({activity}, { status: 200 });
     } catch (error) {
         return NextResponse.json(
-            { error: 'Fehler beim Löschen der Leseaktivität', message: error.message, code:error.code },
+            { error: 'Fehler beim Löschen der Leseaktivität', message: error.message },
             { status: 500 }
         );
     }
