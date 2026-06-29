@@ -4,16 +4,15 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { BookOpen, Users, Compass, ArrowRight, ArrowUpRight, TrendingUp, Star, Sparkles, ScanLine, BarChart3 } from "lucide-react";
+import { BookOpen, Users, ArrowRight, ArrowUpRight, ScanLine, BarChart3 } from "lucide-react";
 
 export default function LandingPage() {
   const router = useRouter();
 
-  // Redirect logged-in users directly to the dashboard
   useEffect(() => {
-    if (localStorage.getItem("isLoggedIn") === "true") {
-      router.push("/dashboard");
-    }
+    fetch("/api/me")
+      .then((res) => { if (res.ok) router.push("/dashboard"); })
+      .catch(() => {});
   }, [router]);
 
   return (
@@ -29,9 +28,6 @@ export default function LandingPage() {
   );
 }
 
-/* ──────────────────────────────────────────────
-   NAVIGATION
-─────────────────────────────────────────────── */
 function Nav() {
   return (
     <nav className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-6 md:px-12 py-6">
@@ -51,15 +47,9 @@ function Nav() {
   );
 }
 
-/* ──────────────────────────────────────────────
-   HERO  –  "Read with style."
-─────────────────────────────────────────────── */
 function Hero() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
-  });
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], [0, -120]);
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
@@ -74,56 +64,21 @@ function Hero() {
   return (
     <section ref={ref} className="relative h-screen min-h-[720px] flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(120,90,40,0.25),transparent_60%)]" />
-
       {floaters.map((f, i) => (
-        <motion.img
-          key={i}
-          src={f.src}
-          alt=""
-          initial={{ opacity: 0, y: 40, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 1, delay: f.delay, ease: [0.22, 1, 0.36, 1] }}
-          className={`absolute hidden md:block rounded-2xl shadow-2xl object-cover aspect-[2/3] ${f.className}`}
-        />
+        <motion.img key={i} src={f.src} alt="" initial={{ opacity: 0, y: 40, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 1, delay: f.delay, ease: [0.22, 1, 0.36, 1] }} className={`absolute hidden md:block rounded-2xl shadow-2xl object-cover aspect-[2/3] ${f.className}`} />
       ))}
-
       <motion.div style={{ y, opacity }} className="relative z-20 text-center px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="inline-flex items-center gap-2 border border-white/20 bg-black/30 backdrop-blur-sm px-5 py-2 rounded-full text-xs tracking-[0.2em] mb-8"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="inline-flex items-center gap-2 border border-white/20 bg-black/30 backdrop-blur-sm px-5 py-2 rounded-full text-xs tracking-[0.2em] mb-8">
           <span className="w-2 h-2 rounded-full bg-green-400" /> BETA · DHBW STUTTGART 2026
         </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          className="text-6xl md:text-8xl font-bold tracking-tight leading-[0.95]"
-        >
+        <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="text-6xl md:text-8xl font-bold tracking-tight leading-[0.95]">
           Read with<br />
-          <span className="italic font-serif bg-gradient-to-r from-white via-yellow-200 to-yellow-400 bg-clip-text text-transparent">
-            style
-          </span>
+          <span className="italic font-serif bg-gradient-to-r from-white via-yellow-200 to-yellow-400 bg-clip-text text-transparent">style</span>
         </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-zinc-300 text-lg max-w-xl mx-auto mt-8 font-light leading-relaxed"
-        >
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.4 }} className="text-zinc-300 text-lg max-w-xl mx-auto mt-8 font-light leading-relaxed">
           Scan your books via ISBN, track every page, and share your thoughts – EpiLog is your digital bookshelf with the charm of a good bookstore.
         </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.55 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center mt-10"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.55 }} className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
           <Link href="/register" className="flex items-center justify-center gap-2 bg-white text-black font-semibold px-8 py-4 rounded-full hover:bg-zinc-200 transition-colors">
             Start Beta <ArrowRight className="w-5 h-5" />
           </Link>
@@ -133,9 +88,6 @@ function Hero() {
   );
 }
 
-/* ──────────────────────────────────────────────
-   FOUR MOVEMENTS  –  4 large cards
-─────────────────────────────────────────────── */
 function FourMoves() {
   const cards = [
     { num: "01", label: "SCAN", title: "Scan ISBN instead of typing", text: "Hold your book up to the camera. EpiLog pulls the cover, author, and blurb directly from the barcode via our API.", glow: "from-purple-900/40", icon: ScanLine },
@@ -148,17 +100,14 @@ function FourMoves() {
     <section id="features" className="px-6 md:px-12 py-32 max-w-7xl mx-auto">
       <Reveal>
         <p className="text-zinc-500 tracking-[0.3em] text-sm mb-6">FOUR MOVEMENTS</p>
-        <h2 className="text-5xl md:text-6xl font-bold tracking-tight mb-20">
-          From the barcode to the <span className="italic font-serif">last sentence.</span>
-        </h2>
+        <h2 className="text-5xl md:text-6xl font-bold tracking-tight mb-20">From the barcode to the <span className="italic font-serif">last sentence.</span></h2>
       </Reveal>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {cards.map((c, i) => {
           const Icon = c.icon;
           return (
             <Reveal key={c.num} delay={i * 0.1}>
-              <div className={`relative h-80 rounded-3xl border border-white/10 overflow-hidden bg-gradient-to-br ${c.glow} to-zinc-950 p-8 flex flex-col justify-between group`}>
+              <div className={`relative h-80 rounded-3xl border border-white/10 overflow-hidden bg-gradient-to-br ${c.glow} to-zinc-950 p-8 flex flex-col justify-between`}>
                 <p className="text-zinc-500 tracking-[0.2em] text-xs">{c.num} — {c.label}</p>
                 <div>
                   <Icon className="w-8 h-8 text-white/80 mb-5" strokeWidth={1.5} />
@@ -174,26 +123,19 @@ function FourMoves() {
   );
 }
 
-/* ──────────────────────────────────────────────
-   READING FLOW  –  Text left, Image right (sticky)
-─────────────────────────────────────────────── */
 function ReadingFlow() {
   const steps = [
     { num: "01", label: "THE INSTANT", title: "A cover that catches your eye.", text: "You walk through a bookstore. A spine draws you in. Scan. It's on your shelf. For now as a reminder. Later as a digital bookmark." },
     { num: "02", label: "DEVOTION", title: "Page by page, without pressure.", text: "EpiLog doesn't remind you – it just shows you how far you've come. Reading remains your thing." },
-    { num: "03", label: "RESONANCE", title: "Books that echo.", text: "Share your thoughts and feelings about books with other readers, or get inspired by other reviews. Connect with other readers! Send friend requests and see live updates in your feed when \"Alex finishes The Martian\". Exchange thoughts on reviews." },
+    { num: "03", label: "RESONANCE", title: "Books that echo.", text: "Share your thoughts and feelings about books with other readers, or get inspired by other reviews." },
   ];
 
   return (
     <section id="flow" className="px-6 md:px-12 py-32 max-w-7xl mx-auto">
       <Reveal>
         <p className="text-zinc-500 tracking-[0.3em] text-sm mb-6">READING FLOW</p>
-        <h2 className="text-5xl md:text-6xl font-bold tracking-tight mb-20">
-          Three moments,<br />
-          <span className="italic font-serif text-yellow-300">one ritual.</span>
-        </h2>
+        <h2 className="text-5xl md:text-6xl font-bold tracking-tight mb-20">Three moments,<br /><span className="italic font-serif text-yellow-300">one ritual.</span></h2>
       </Reveal>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
         <div className="flex flex-col gap-16">
           {steps.map((s, i) => (
@@ -204,13 +146,8 @@ function ReadingFlow() {
             </Reveal>
           ))}
         </div>
-
         <div className="hidden md:block sticky top-24 h-[70vh] rounded-3xl overflow-hidden border border-white/10">
-          <img
-            src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=1200&auto=format&fit=crop"
-            alt=""
-            className="w-full h-full object-cover"
-          />
+          <img src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=1200&auto=format&fit=crop" alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
           <div className="absolute bottom-8 left-8">
             <p className="text-2xl font-bold">Dune</p>
@@ -222,9 +159,6 @@ function ReadingFlow() {
   );
 }
 
-/* ──────────────────────────────────────────────
-   VOICES  –  Quote Cards (light section)
-─────────────────────────────────────────────── */
 function Voices() {
   const quotes = [
     { text: "A book must be the axe for the frozen sea inside us.", author: "Franz Kafka" },
@@ -236,11 +170,8 @@ function Voices() {
     <section id="voices" className="bg-white text-black px-6 md:px-12 py-32">
       <div className="max-w-7xl mx-auto">
         <Reveal>
-          <h2 className="text-5xl md:text-6xl font-bold tracking-tight mb-20">
-            A library full of voices.
-          </h2>
+          <h2 className="text-5xl md:text-6xl font-bold tracking-tight mb-20">A library full of voices.</h2>
         </Reveal>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {quotes.map((q, i) => (
             <Reveal key={i} delay={i * 0.1}>
@@ -256,25 +187,14 @@ function Voices() {
   );
 }
 
-/* ──────────────────────────────────────────────
-   FINAL CTA
-─────────────────────────────────────────────── */
 function FinalCta() {
   return (
     <section className="px-6 md:px-12 py-40 text-center relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(120,90,40,0.2),transparent_60%)]" />
-      
       <Reveal>
         <p className="text-zinc-500 tracking-[0.3em] text-sm mb-6">TRACK YOUR FIRST READING PROGRESS</p>
-        <h2 className="text-6xl md:text-8xl font-bold tracking-tight mb-8">
-          Your next<br />
-          <span className="italic font-serif bg-gradient-to-r from-white via-yellow-200 to-yellow-400 bg-clip-text text-transparent">
-            chapter.
-          </span>
-        </h2>
-        <p className="text-zinc-400 text-lg mb-12 max-w-xl mx-auto font-light">
-          Free, ad-free, built with love for books. Start now – your shelf is waiting.
-        </p>
+        <h2 className="text-6xl md:text-8xl font-bold tracking-tight mb-8">Your next<br /><span className="italic font-serif bg-gradient-to-r from-white via-yellow-200 to-yellow-400 bg-clip-text text-transparent">chapter.</span></h2>
+        <p className="text-zinc-400 text-lg mb-12 max-w-xl mx-auto font-light">Free, ad-free, built with love for books. Start now – your shelf is waiting.</p>
         <Link href="/register" className="inline-flex items-center gap-2 bg-white text-black font-semibold text-lg px-10 py-5 rounded-full hover:bg-zinc-200 transition-colors">
           Get started now <ArrowUpRight className="w-5 h-5" />
         </Link>
@@ -283,33 +203,11 @@ function FinalCta() {
   );
 }
 
-/* ──────────────────────────────────────────────
-   FOOTER / IMPRESSUM
-─────────────────────────────────────────────── */
 function Footer() {
   const columns = [
-    {
-      title: "Product",
-      links: [
-        { name: "Features", href: "#features" },
-        { name: "Reading Flow", href: "#flow" },
-        { name: "Community", href: "#voices" }
-      ],
-    },
-    {
-      title: "Account",
-      links: [
-        { name: "Log In", href: "/login" },
-        { name: "Register", href: "/register" }
-      ],
-    },
-    {
-      title: "About Us",
-      links: [
-        { name: "DHBW Stuttgart", href: "https://www.dhbw-stuttgart.de" },
-        { name: "GitHub", href: "https://github.com/flol27/EpiLog" } 
-      ],
-    },
+    { title: "Product", links: [{ name: "Features", href: "#features" }, { name: "Reading Flow", href: "#flow" }, { name: "Community", href: "#voices" }] },
+    { title: "Account", links: [{ name: "Log In", href: "/login" }, { name: "Register", href: "/register" }] },
+    { title: "About Us", links: [{ name: "DHBW Stuttgart", href: "https://www.dhbw-stuttgart.de" }, { name: "GitHub", href: "https://github.com/flol27/EpiLog" }] },
   ];
 
   return (
@@ -321,26 +219,17 @@ function Footer() {
               <BookOpen className="w-8 h-8" />
               <span className="font-bold text-2xl tracking-tight text-white">EpiLog</span>
             </Link>
-            <p className="text-zinc-500 text-sm leading-relaxed max-w-xs">
-              Your digital bookshelf. A study project of DHBW Stuttgart.
-            </p>
+            <p className="text-zinc-500 text-sm leading-relaxed max-w-xs">Your digital bookshelf. A study project of DHBW Stuttgart.</p>
           </div>
-
           {columns.map((col) => (
             <div key={col.title}>
               <h4 className="text-sm font-semibold mb-4">{col.title}</h4>
               <ul className="flex flex-col gap-3">
                 {col.links.map((link) => {
                   const isExternal = link.href.startsWith("http");
-
                   return (
                     <li key={link.name}>
-                      <Link 
-                        href={link.href} 
-                        target={isExternal ? "_blank" : undefined} 
-                        rel={isExternal ? "noopener noreferrer" : undefined}
-                        className="text-zinc-500 text-sm hover:text-white transition-colors"
-                      >
+                      <Link href={link.href} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="text-zinc-500 text-sm hover:text-white transition-colors">
                         {link.name}
                       </Link>
                     </li>
@@ -350,15 +239,10 @@ function Footer() {
             </div>
           ))}
         </div>
-
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <p className="text-zinc-500 text-sm">© 2026 EpiLog · DHBW Stuttgart</p>
-          
           <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-zinc-500">
-            <span>Imprint</span>
-            <span>Privacy Policy</span>
-            <span>Terms of Service</span>
-            <span>Cookie Settings</span>
+            <span>Imprint</span><span>Privacy Policy</span><span>Terms of Service</span><span>Cookie Settings</span>
           </div>
         </div>
       </div>
@@ -366,17 +250,9 @@ function Footer() {
   );
 }
 
-/* ──────────────────────────────────────────────
-   HELPER: Reveal – fades in content on scroll
-─────────────────────────────────────────────── */
-function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+function Reveal({ children, delay = 0 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}
-    >
+    <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}>
       {children}
     </motion.div>
   );
