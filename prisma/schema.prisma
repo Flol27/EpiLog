@@ -1,8 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -14,45 +12,48 @@ datasource db {
 
 model Book {
   id    Int     @id @default(autoincrement())
-  isbn  Int     @unique
+  isbn  String  @unique
   title String?
 
   bookUsers BookUser[]
 }
 
 model User {
-  id                  Int       @id @default(autoincrement())
-  email               String    @unique
-  username            String    @unique
-  password            String
-  role                String    @default("user")
-  firstname           String
-  lastname            String?
-  readStreak          Int       @default(0)
-  readStreakUpdated   DateTime? // Readingstreak update date
-  profilePic          String?
-  status              String?
-  quote               String?
-  createdAt           DateTime  @default(now())
+  id                Int       @id @default(autoincrement())
+  email             String    @unique
+  username          String    @unique
+  password          String
+  role              String    @default("user")
+  firstname         String
+  lastname          String?
+  readStreak        Int       @default(0)
+  readStreakUpdated DateTime?
+  profilePic        String?
+  status            String?
+  quote             String?
+  createdAt         DateTime  @default(now())
 
   bookUsers  BookUser[]
   readingActivities ReadingActivity[]
+  friendshipsFrom Friendship[] @relation("FriendshipFrom")
+  friendshipsTo   Friendship[] @relation("FriendshipTo")
 }
 
 model BookUser {
-  userId             Int
-  bookId             Int
-  pagesRead          Int?
-  startDate          DateTime?
-  readDate           DateTime?
-  rating             Int?
-  ratingText         String?
+  userId     Int
+  bookId     Int
+  pagesRead  Int?
+  startDate  DateTime?
+  readDate   DateTime?
+  rating     Int?
+  ratingText String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   book Book @relation(fields: [bookId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@id([userId, bookId])
 }
+
 
 model ReadingActivity {
   userId    Int
@@ -62,4 +63,15 @@ model ReadingActivity {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, date])
+}
+
+model Friendship {
+  fromId    Int
+  toId      Int
+  createdAt DateTime @default(now())
+
+  from User @relation("FriendshipFrom", fields: [fromId], references: [id], onDelete: Cascade)
+  to   User @relation("FriendshipTo",   fields: [toId],   references: [id], onDelete: Cascade)
+
+  @@unique([fromId, toId])
 }
