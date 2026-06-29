@@ -1,8 +1,10 @@
-git clone https://github.com/EUER-REPO
+git clone https://github.com/Flol27/EpiLog.git
 cd epilog
-cp example.env .env
+
 npm install
 
+## Eure Environment-Variablen definieren (durch .env File) und Datenbank erstellen.
+cp example.env .env
 npx prisma generate
 npx prisma migrate dev --name init
 
