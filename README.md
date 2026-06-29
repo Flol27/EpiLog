@@ -55,8 +55,7 @@ npm install
 cp example.env .env
 nano .env
 ```
-> [!TIP]
-> env file
+> [!TIP] env file
 >```env
 >ADMIN_EMAIL="admin@epilog.com"
 >ADMIN_PASSWORD="admin"
