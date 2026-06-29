@@ -121,7 +121,7 @@ export async function POST(request, { params }){
         if (!book) return NextResponse.json({ error: 'Buch nicht gefunden.' }, { status: 404 })
 
 
-        const response = await prisma.bookUser.upsert({
+        const res = await prisma.bookUser.upsert({
             where: {
                 userId_bookId: {
                     userId: u_id,
@@ -136,7 +136,7 @@ export async function POST(request, { params }){
 
         return NextResponse.json(
             {
-                user:response
+                user:res
             },
             { status: 201 }
         );
