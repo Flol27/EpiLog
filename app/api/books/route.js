@@ -23,28 +23,33 @@ export async function GET(request) {
         const userId = await authorized('user', request);
         if (!userId) { return response.NOTAUTHORIZED(); }
 
-        // Nur die Bücher des eingeloggten Users zurückgeben
+        // 1. Prisma holt die Daten inklusive totalPages
         const bookUsers = await prisma.bookUser.findMany({
             where: { userId: userId },
             include: {
                 book: {
                     select: {
-                        id:    true,
-                        isbn:  true,
+                        id: true,
+                        isbn: true,
                         title: true,
+                        totalPages: true, // WICHTIG: Das muss hier stehen!
                     }
                 }
             }
         });
 
-        const books = bookUsers.map(bu => ({
-            ...bu.book,
-            pagesRead:  bu.pagesRead,
-            startDate:  bu.startDate,
-            readDate:   bu.readDate,
-            rating:     bu.rating,
-            ratingText: bu.ratingText,
-        }));
+        // 2. Das Mapping fügt alles zusammen
+        const books = bookUsers.map(bu => {
+            console.log("DEBUG_BU_BOOK:", bu.book);
+            return {
+                ...bu.book,         // Hier werden id, isbn, title UND totalPages übernommen
+                pagesRead: bu.pagesRead,
+                startDate: bu.startDate,
+                readDate: bu.readDate,
+                rating: bu.rating,
+                ratingText: bu.ratingText,
+            };
+        });
 
         return NextResponse.json({ books }, { status: 200 });
 
@@ -120,10 +125,17 @@ export async function POST(request) {
         }
 
         // Verknüpfung User <-> Buch anlegen
-        const bookUser = await prisma.bookUser.create({
-            data: {
-                userId,
-                bookId: book.id,
+        const bookUsers = await prisma.bookUser.findMany({
+            where: { userId: userId },
+            include: {
+                book: {
+                    select: {
+                        id: true,
+                        isbn: true,
+                        title: true,
+                        totalPages: true, // <-- DIESE ZEILE HINZUFÜGEN
+                    }
+                }
             }
         });
 

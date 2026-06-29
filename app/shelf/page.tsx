@@ -35,7 +35,6 @@ export default function Shelf() {
           credentials: "include" 
         });
 
-        // Error-Handling sauber aktiviert für den JWT-Schutz
         if (!res.ok) {
           if (res.status === 401) throw new Error("Nicht autorisiert. Bitte logge dich neu ein.");
           throw new Error("Fehler beim Laden der DB-Einträge.");
@@ -50,35 +49,33 @@ export default function Shelf() {
           return;
         }
 
-        // 2. Für JEDE ISBN parallel die OpenLibrary-Details über deine API abfragen
+        // 2. Für JEDE ISBN parallel die Details abfragen
         const fullBooksPromises = itemsArray.map(async (dbItem: any) => {
           const isbn = dbItem.isbn; 
           if (!isbn) return null;
 
           try {
             const olRes = await fetch(`/api/openlibrary_search?q=${encodeURIComponent(isbn)}`);
-            if (!olRes.ok) return { id: dbItem.id, isbn: isbn, title: `ISBN: ${isbn}`, author: "Unknown", genre: "Unknown" };
-
             const olData = await olRes.json();
+            const olBook = olData[0] || {};
             
-            if (olData && olData.length > 0) {
-              const olBook = olData[0];
-              return {
-                id: dbItem.id, // Das ist die Primärschlüssel-ID aus deiner SQLite (wichtig fürs Löschen!)
-                isbn: isbn,
-                title: olBook.title || "Unknown Title",
-                author: olBook.author || "Unknown Author",
-                year: olBook.publishDate,
-                genre: olBook.genres || "Fiction", 
-                coverUrl: olBook.coverKey ? `https://covers.openlibrary.org/b/olid/${olBook.coverKey}-L.jpg` : null,
-                description: "Details loaded from OpenLibrary."
-              };
-            }
-            
-            return { id: dbItem.id, isbn: isbn, title: `Unbekanntes Buch (${isbn})`, author: "Keine Daten", genre: "Unknown" };
+            return {
+              id: dbItem.id, 
+              isbn: isbn,
+              title: olBook.title || "Unknown Title",
+              author: olBook.author || "Unknown Author",
+              year: olBook.publishDate,
+              genre: olBook.genres || "Fiction", 
+              coverUrl: olBook.coverKey ? `https://covers.openlibrary.org/b/olid/${olBook.coverKey}-L.jpg` : null,
+              description: "Details loaded from OpenLibrary.",
+              pagesRead: dbItem.pagesRead || 0,
+              // HIER IST DER FIX:
+              // Wir priorisieren dbItem.totalPages (deine manuelle Eingabe aus der DB),
+              // falls das nicht da ist, nehmen wir den Wert von OpenLibrary
+              totalPages: dbItem.totalPages || olBook.number_of_pages_median || olBook.number_of_pages || 0 
+            };
           } catch (fetchErr) {
-            console.error(`Fehler beim Nachladen der ISBN ${isbn}:`, fetchErr);
-            return { id: dbItem.id, isbn: isbn, title: `Fehler beim Laden (${isbn})`, author: "API Error", genre: "Unknown" };
+            return { id: dbItem.id, isbn: isbn, title: "Fehler", author: "API Error", genre: "Unknown" };
           }
         });
 
@@ -96,12 +93,36 @@ export default function Shelf() {
     loadShelfData();
   }, []);
 
-  // NEU: Diese reaktive Funktion wird vom Modal aufgerufen, wenn das Löschen erfolgreich war
+  // Aktualisiert die Liste, wenn ein Buch gelöscht wurde
   const handleBookRemovedFromState = (removedId: string) => {
     setBooks((prevBooks) => prevBooks.filter((book) => book.id !== removedId));
   };
 
-  // Dynamische Genre-Zählung
+  // NEU: Aktualisiert die UI sofort, wenn im Modal Seiten gespeichert wurden
+  const handlePageUpdate = (bookId: string, newPages: number, newTotal?: number) => {
+    setBooks((prevBooks) =>
+      prevBooks.map((book) =>
+        book.id === bookId
+          ? { 
+              ...book, 
+              pagesRead: newPages, 
+              // Hier fügen wir totalPages hinzu, falls ein neuer Wert übergeben wurde
+              ...(newTotal !== undefined && { totalPages: newTotal }) 
+            }
+          : book
+      )
+    );
+
+    // Update auch das ausgewählte Buch im Modal-State, damit es sofort reagiert
+    if (selectedBook && selectedBook.id === bookId) {
+      setSelectedBook((prev: any) => ({ 
+        ...prev, 
+        pagesRead: newPages,
+        ...(newTotal !== undefined && { totalPages: newTotal })
+      }));
+    }
+  };
+
   const genreCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     books.forEach((book) => {
@@ -144,7 +165,6 @@ export default function Shelf() {
 
       {!isLoading && !error && (
         <>
-          {/* Genre Filter */}
           <div className="flex flex-wrap gap-3">
             <button
               onClick={() => setGenreFilter("All")}
@@ -166,7 +186,6 @@ export default function Shelf() {
             ))}
           </div>
 
-          {/* Suchzeile */}
           <div className="relative w-full">
             <Search className="absolute left-4 top-3.5 w-5 h-5 text-zinc-500" />
             <input
@@ -178,7 +197,6 @@ export default function Shelf() {
             />
           </div>
 
-          {/* Bücher Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {filteredBooks.map((book) => (
               <div key={book.id} onClick={() => { setSelectedBook(book); setIsModalOpen(true); }} className="group flex flex-col gap-3 cursor-pointer">
@@ -193,7 +211,24 @@ export default function Shelf() {
                 <div>
                   <h3 className="text-white font-semibold group-hover:text-yellow-400 transition-colors truncate">{book.title}</h3>
                   <p className="text-zinc-400 text-sm truncate">{book.author}</p>
-                  <span className="text-xs text-zinc-600 mt-0.5 inline-block">{book.genre}</span>
+                  
+                  {/* NEU: Die Fortschrittsanzeige wird gerendert, wenn totalPages größer 0 ist */}
+                  {book.totalPages && book.totalPages > 0 ? (
+                    <div className="mt-2 text-xs font-medium text-zinc-500">
+                      <div className="flex justify-between mb-1">
+                        <span>{book.pagesRead} / {book.totalPages} p</span>
+                        <span className="text-yellow-400">{Math.round((book.pagesRead / book.totalPages) * 100)}%</span>
+                      </div>
+                      <div className="h-1 w-full bg-zinc-800 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-yellow-400 rounded-full transition-all duration-500" 
+                          style={{ width: `${(book.pagesRead / book.totalPages) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-zinc-600 mt-0.5 inline-block">{book.genre}</span>
+                  )}
                 </div>
               </div>
             ))}
@@ -204,13 +239,14 @@ export default function Shelf() {
         </>
       )}
 
-      {/* MODAL ÜBERGABE: Jetzt vollständig reaktiv parametrisiert */}
+      {/* MODAL ÜBERGABE */}
       <BookModal 
         book={selectedBook} 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        isOwnShelf={true} // Schaltet die Modal-Buttons auf Lösch-Modus
-        onBookRemoved={handleBookRemovedFromState} // Aktualisiert das Grid nach dem Löschen atomar
+        isOwnShelf={true} 
+        onBookRemoved={handleBookRemovedFromState} 
+        onPageUpdate={handlePageUpdate} // Die neue Update-Funktion wird an das Modal gereicht
       />
     </div>
   );

@@ -21,7 +21,6 @@ export async function GET(request: Request) {
   }
 
   try {
-    // 1. NUR EIN EINZIGER FETCH AN DIE API
     const response = await fetch(apiUrl, {
       next: { revalidate: 3600 } // 1 Stunde cachen
     });
@@ -36,64 +35,64 @@ export async function GET(request: Request) {
       return NextResponse.json([]);
     }
 
-    // 1. Array für die fertigen Bücher vorbereiten
-const books = [];
+    const books = [];
+    const openLibraryDocs = data.docs.slice(0, 50);
 
-// 2. Wir schneiden auf die Docs zu
-const openLibraryDocs = data.docs.slice(0, 50); // Am besten auf max. 5 drosseln, damit es schnell bleibt!
-
-// 3. Echte sequentielle Schleife, die das "await" erlaubt!
-for (const book of openLibraryDocs) {
-  let displayIsbn = 'Keine ISBN vorhanden';
-  let genres = 'Keine Genres';
-  
-  // Suche im "ia"-Array nach "isbn_"
-  if (book.ia && book.ia.length > 0) {
-    const isbnEntry = book.ia.find((id: string) => id.startsWith('isbn_'));
-    if (isbnEntry) {
-      displayIsbn = isbnEntry.replace('isbn_', '');
-    }
-  } 
-  
-  // Fallback auf das normale "isbn"-Array
-  if (displayIsbn === 'Keine ISBN vorhanden' && book.isbn && book.isbn.length > 0) {
-    displayIsbn = book.isbn[0];
-  }
-
-  const publishDate = book.first_publish_year 
-    ? String(book.first_publish_year) 
-    : 'Unbekanntes Veröffentlichungsdatum';
-
-  // HIER warten wir jetzt brav, bis Apple antwortet, BEVOR das Buch dem Array hinzugefügt wird
-  if (displayIsbn !== 'Keine ISBN vorhanden') {
-    try {
-      const appleUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(book.title)}&media=ebook&country=DE`;
-      const response = await fetch(appleUrl); // Wartet synchronisiert auf den Netzwerk-Request
+    for (const book of openLibraryDocs) {
+      let displayIsbn = 'Keine ISBN vorhanden';
+      let genres = 'Keine Genres';
       
-      if (response.ok) {
-        const appleData = await response.json();
-        if (appleData.results && appleData.results.length > 0) {
-          const appleBook = appleData.results[0];
-          if (appleBook && appleBook.genres) {
-            genres = appleBook.genres[0];
+      // Suche im "ia"-Array nach "isbn_"
+      if (book.ia && book.ia.length > 0) {
+        const isbnEntry = book.ia.find((id: string) => id.startsWith('isbn_'));
+        if (isbnEntry) {
+          displayIsbn = isbnEntry.replace('isbn_', '');
+        }
+      } 
+      
+      // Fallback auf das normale "isbn"-Array
+      if (displayIsbn === 'Keine ISBN vorhanden' && book.isbn && book.isbn.length > 0) {
+        displayIsbn = book.isbn[0];
+      }
+
+      const publishDate = book.first_publish_year 
+        ? String(book.first_publish_year) 
+        : 'Unbekanntes Veröffentlichungsdatum';
+
+      if (displayIsbn !== 'Keine ISBN vorhanden') {
+        try {
+          const appleUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(book.title)}&media=ebook&country=DE`;
+          const response = await fetch(appleUrl);
+          
+          if (response.ok) {
+            const appleData = await response.json();
+            if (appleData.results && appleData.results.length > 0) {
+              const appleBook = appleData.results[0];
+              if (appleBook && appleBook.genres) {
+                genres = appleBook.genres[0];
+              }
+            }
           }
+        } catch (error) {
+          console.error("Fehler beim Laden von Apple:", error);
         }
       }
-    } catch (error) {
-      console.error("Fehler beim Laden von Apple:", error);
-    }
-  }
 
-  // Erst wenn alle Daten (inklusive Apple) bereitstehen, pushen wir das Buch in die Liste
-  books.push({
-    title: book.title,
-    author: book.author_name?.[0] || 'Unbekannter Autor',
-    isbn: displayIsbn,
-    publishDate: publishDate,
-    coverKey: book.cover_edition_key || null,
-    genres: genres
-  });
-}
+      // HIER IST DIE ANPASSUNG: 
+      // Wir holen den Seiten-Median oder die feste Seitenzahl direkt aus dem OpenLibrary-Dokument
+      const pageCount = book.number_of_pages_median || book.number_of_pages || 0;
+
+      // Jetzt übergeben wir die Variable "number_of_pages" im JSON-Response an das Frontend
+      books.push({
+        title: book.title,
+        author: book.author_name?.[0] || 'Unbekannter Autor',
+        isbn: displayIsbn,
+        publishDate: publishDate,
+        coverKey: book.cover_edition_key || null,
+        genres: genres,
+        number_of_pages: pageCount // <-- HIER ERWEITERT
+      });
+    }
 
     return NextResponse.json(books);
   } catch (error) {

@@ -13,11 +13,12 @@ datasource db {
 }
 
 model Book {
-  id    Int     @id @default(autoincrement())
-  isbn  String     @unique
-  title String?
-
-  bookUsers BookUser[]
+  id         Int        @id @default(autoincrement())
+  isbn       String     @unique
+  title      String?
+  totalPages Int?       
+  
+  bookUsers  BookUser[]
 }
 
 model User {
@@ -47,8 +48,10 @@ model BookUser {
   rating             Int?
   ratingText         String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  updatedAt  DateTime @default(now()) @updatedAt 
+  
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@id([userId, bookId])
 }
