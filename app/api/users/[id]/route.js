@@ -105,15 +105,20 @@ export async function GET(request, { params }){
 export async function PUT(request, { params }) {
     try {
 
+        const { id } = await params;
+        const { email, password, username, firstname, lastname, role, readStreak, quote, status } = await request.json();
+
+
         let admin = false;
+        const userId = await authorized('user', request);
+        console.log(id);
+        console.log(userId);
 
         if (await authorized('admin', request)) {admin = true;}
-        else if (await authorized('user', request)) {admin = false;}
-        else {return response.NOTAUTHORIZED();}
 
-        const { id } = await params;
-        const userId = parseInt(id, 10);
-        const { email, password, username, firstname, lastname, role, readStreak, quote, status } = await request.json();
+        if (!userId || userId !== parseInt(id)) {return response.NOTAUTHORIZED();}
+
+
 
 
         // Dynamisches Update-Objekt aufbauen
@@ -189,10 +194,13 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }){
     try{
 
-        if (!await authorized('admin', request)) {return response.NOTAUTHORIZED();}
-
         const { id } = await params;
-        const userId = parseInt(id, 10);
+        const userId = await authorized('user', request);
+
+        // Nur Admin und der eigene User können den User löschen
+        if (userId !== parseInt(id) || !await authorized('admin', request)) {return response.NOTAUTHORIZED();}
+
+
 
         const user = await prisma.user.delete({
             where: { id:userId },
