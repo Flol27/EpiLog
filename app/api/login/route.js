@@ -2,7 +2,13 @@ import { NextResponse } from 'next/server';
 import { prisma } from "@/lib/prisma";
 import * as argon2 from 'argon2';
 import { authorize } from '@/app/lib/auth';
+import { RateLimiterMemory } from 'rate-limiter-flexible';
 
+
+const rateLimiter = new RateLimiterMemory({
+    points: 5,
+    duration: 60,
+});
 
 /**
  * @swagger
@@ -34,10 +40,22 @@ import { authorize } from '@/app/lib/auth';
  *         description: Falsches Passwort
  *       404:
  *         description: Nutzer nicht gefunden
+ *       429:
+ *         description: Zu viele Versuche
  *       500:
  *         description: Serverfehler
  */
 export async function POST(request){
+    const ip = request.headers.get('x-forwarded-for') ?? 'unknown';
+
+    try {
+        await rateLimiter.consume(ip);
+    } catch {
+        return NextResponse.json(
+            { error: 'Zu viele Versuche' },
+            { status: 429 }
+        );
+    }
     try{
 
         const { email, username, password } = await request.json();
@@ -70,6 +88,7 @@ export async function POST(request){
 
 
         if(passwordCorrect){
+            rateLimiter.reward(ip);
             const token = await authorize(user);
 
             const response = NextResponse.json({ status: 200 });
@@ -83,7 +102,6 @@ export async function POST(request){
                 { status: 401 }
             );
         }
-
 
     } catch(error){
         return NextResponse.json(
