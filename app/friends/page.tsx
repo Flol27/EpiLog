@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Users, UserPlus, UserMinus, Search, Flame, MessageCircle } from "lucide-react";
+import { Users, UserPlus, UserMinus, Search, Flame } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface FriendUser {
@@ -18,30 +18,20 @@ interface FriendUser {
 }
 
 function Avatar({ user, size = "md" }: { user: FriendUser; size?: "sm" | "md" | "lg" }) {
-  const sizes = { sm: "w-10 h-10 text-sm", md: "w-14 h-14 text-base", lg: "w-20 h-20 text-xl" };
-  const initials = `${user.firstname[0]}${user.lastname?.[0] ?? ""}`.toUpperCase();
+  const sizes = { sm: "w-10 h-10", md: "w-14 h-14", lg: "w-20 h-20" };
   const seed = user.username;
-
   return (
     <div className={`${sizes[size]} rounded-full bg-zinc-800 overflow-hidden shrink-0 ring-2 ring-white/5`}>
       {user.profilePic ? (
         <img src={user.profilePic} alt={user.firstname} className="w-full h-full object-cover" />
       ) : (
-        <img
-          src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`}
-          alt={user.firstname}
-          className="w-full h-full object-cover"
-        />
+        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`} alt={user.firstname} className="w-full h-full object-cover" />
       )}
     </div>
   );
 }
 
-function UserCard({
-  user,
-  onToggle,
-  loading,
-}: {
+function UserCard({ user, onToggle, loading }: {
   user: FriendUser;
   onToggle: (id: number, isFriend: boolean) => void;
   loading: boolean;
@@ -58,9 +48,7 @@ function UserCard({
       <div className="flex items-start gap-4">
         <Avatar user={user} size="md" />
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-white truncate">
-            {user.firstname} {user.lastname}
-          </p>
+          <p className="font-bold text-white truncate">{user.firstname} {user.lastname}</p>
           <p className="text-zinc-500 text-sm truncate">@{user.username}</p>
           {user.quote && (
             <p className="text-zinc-400 text-xs mt-1 line-clamp-2 italic">"{user.quote}"</p>
@@ -68,23 +56,21 @@ function UserCard({
         </div>
       </div>
 
-      {/* Stats row */}
       <div className="flex items-center gap-4 text-xs text-zinc-500">
         {user.readStreak > 0 && (
           <span className="flex items-center gap-1">
             <Flame className="w-3.5 h-3.5 text-yellow-400" />
-            <span className="text-white font-medium">{user.readStreak}</span> Tage
+            <span className="text-white font-medium">{user.readStreak}</span> day streak
           </span>
         )}
         {user.mutualCount > 0 && (
           <span className="flex items-center gap-1">
             <Users className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="text-white font-medium">{user.mutualCount}</span> gemeinsam
+            <span className="text-white font-medium">{user.mutualCount}</span> mutual
           </span>
         )}
       </div>
 
-      {/* Action button */}
       <button
         onClick={() => onToggle(user.id, user.isFriend)}
         disabled={loading}
@@ -95,9 +81,9 @@ function UserCard({
         }`}
       >
         {user.isFriend ? (
-          <><UserMinus className="w-4 h-4" /> Entfernen</>
+          <><UserMinus className="w-4 h-4" /> Remove</>
         ) : (
-          <><UserPlus className="w-4 h-4" /> Hinzufügen</>
+          <><UserPlus className="w-4 h-4" /> Add Friend</>
         )}
       </button>
     </motion.div>
@@ -130,9 +116,7 @@ export default function FriendsPage() {
           body: JSON.stringify({ targetId }),
         });
       }
-      setUsers((prev) =>
-        prev.map((u) => u.id === targetId ? { ...u, isFriend: !isFriend } : u)
-      );
+      setUsers((prev) => prev.map((u) => u.id === targetId ? { ...u, isFriend: !isFriend } : u));
     } finally {
       setToggling(null);
     }
@@ -159,28 +143,27 @@ export default function FriendsPage() {
 
       {/* Header */}
       <div className="flex flex-col gap-1">
-        <p className="text-zinc-500 tracking-[0.3em] text-xs">DEIN NETZWERK</p>
+        <p className="text-zinc-500 tracking-[0.3em] text-xs">YOUR NETWORK</p>
         <h1 className="text-4xl font-bold tracking-tight flex items-center gap-3">
           <Users className="w-8 h-8 text-yellow-400" />
           Friends
         </h1>
         <p className="text-zinc-400 text-sm mt-1">
-          {friendCount === 0 ? "Noch keine Freunde hinzugefügt." : `${friendCount} ${friendCount === 1 ? "Freund" : "Freunde"} in deinem Netzwerk.`}
+          {friendCount === 0
+            ? "No friends added yet."
+            : `${friendCount} ${friendCount === 1 ? "friend" : "friends"} in your network.`}
         </p>
       </div>
 
       {/* Tabs + Search */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-        {/* Tabs */}
         <div className="flex gap-2 bg-white/5 border border-white/8 rounded-xl p-1">
-          {([["friends", "Meine Freunde"], ["all", "Alle Nutzer"]] as const).map(([key, label]) => (
+          {([["friends", "My Friends"], ["all", "All Users"]] as const).map(([key, label]) => (
             <button
               key={key}
               onClick={() => setTab(key)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                tab === key
-                  ? "bg-yellow-400 text-black"
-                  : "text-zinc-400 hover:text-white"
+                tab === key ? "bg-yellow-400 text-black" : "text-zinc-400 hover:text-white"
               }`}
             >
               {label}
@@ -193,12 +176,11 @@ export default function FriendsPage() {
           ))}
         </div>
 
-        {/* Search */}
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
           <input
             type="text"
-            placeholder="Suchen..."
+            placeholder="Search..."
             value={search}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
             className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-yellow-400/50 transition-colors"
@@ -217,14 +199,11 @@ export default function FriendsPage() {
         <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
           <Users className="w-12 h-12 text-zinc-700" />
           <p className="text-zinc-400 text-lg font-medium">
-            {tab === "friends" ? "Noch keine Freunde." : "Keine Nutzer gefunden."}
+            {tab === "friends" ? "No friends yet." : "No users found."}
           </p>
           {tab === "friends" && (
-            <button
-              onClick={() => setTab("all")}
-              className="text-yellow-400 text-sm hover:underline"
-            >
-              Alle Nutzer anzeigen →
+            <button onClick={() => setTab("all")} className="text-yellow-400 text-sm hover:underline">
+              Browse all users →
             </button>
           )}
         </div>
@@ -232,12 +211,7 @@ export default function FriendsPage() {
         <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <AnimatePresence mode="popLayout">
             {filtered.map((user) => (
-              <UserCard
-                key={user.id}
-                user={user}
-                onToggle={handleToggle}
-                loading={toggling === user.id}
-              />
+              <UserCard key={user.id} user={user} onToggle={handleToggle} loading={toggling === user.id} />
             ))}
           </AnimatePresence>
         </motion.div>
