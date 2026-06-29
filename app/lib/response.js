@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 export function NOTAUTHORIZED(){
     return NextResponse.json(
-        { error: 'Nicht autorisiert. Bitte zuerst einloggen.' },
+        { error: 'Nicht autorisiert' },
         { status: 401 }
     );
 }
