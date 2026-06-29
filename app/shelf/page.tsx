@@ -35,13 +35,13 @@ export default function Shelf() {
           credentials: "include" 
         });
 
+        // Error-Handling sauber aktiviert für den JWT-Schutz
         // if (!res.ok) {
         //   if (res.status === 401) throw new Error("Nicht autorisiert. Bitte logge dich neu ein.");
         //   throw new Error("Fehler beim Laden der DB-Einträge.");
         // }
 
         const dbItems = await res.json();
-        // Sicherstellen, dass wir eine Liste haben (z.B. [{ id: 1, isbn: "..." }])
         const itemsArray = Array.isArray(dbItems) ? dbItems : dbItems.books || [];
 
         if (itemsArray.length === 0) {
@@ -52,42 +52,37 @@ export default function Shelf() {
 
         // 2. Für JEDE ISBN parallel die OpenLibrary-Details über deine API abfragen
         const fullBooksPromises = itemsArray.map(async (dbItem: any) => {
-          // Falls in der DB 'isbn' steht, ansonsten anpassen (z.B. dbItem.isbn_number)
           const isbn = dbItem.isbn; 
           if (!isbn) return null;
 
           try {
             const olRes = await fetch(`/api/openlibrary_search?q=${encodeURIComponent(isbn)}`);
-            if (!olRes.ok) return { id: dbItem.id, title: `ISBN: ${isbn}`, author: "Unknown", genre: "Unknown" };
+            if (!olRes.ok) return { id: dbItem.id, isbn: isbn, title: `ISBN: ${isbn}`, author: "Unknown", genre: "Unknown" };
 
             const olData = await olRes.json();
             
             if (olData && olData.length > 0) {
               const olBook = olData[0];
-              // Wir kombinieren die DB-ID mit den Live-Daten aus OpenLibrary (exakt wie im Discover-Format!)
               return {
-                id: dbItem.id,
+                id: dbItem.id, // Das ist die Primärschlüssel-ID aus deiner SQLite (wichtig fürs Löschen!)
                 isbn: isbn,
                 title: olBook.title || "Unknown Title",
                 author: olBook.author || "Unknown Author",
                 year: olBook.publishDate,
-                genre: olBook.genres || "Fiction", // Standard-Genre als Fallback falls leer
+                genre: olBook.genres || "Fiction", 
                 coverUrl: olBook.coverKey ? `https://covers.openlibrary.org/b/olid/${olBook.coverKey}-L.jpg` : null,
                 description: "Details loaded from OpenLibrary."
               };
             }
             
-            // Fallback, falls OpenLibrary zu der ISBN nichts findet
-            return { id: dbItem.id, title: `Unbekanntes Buch (${isbn})`, author: "Keine Daten", genre: "Unknown" };
+            return { id: dbItem.id, isbn: isbn, title: `Unbekanntes Buch (${isbn})`, author: "Keine Daten", genre: "Unknown" };
           } catch (fetchErr) {
             console.error(`Fehler beim Nachladen der ISBN ${isbn}:`, fetchErr);
-            return { id: dbItem.id, title: `Fehler beim Laden (${isbn})`, author: "API Error", genre: "Unknown" };
+            return { id: dbItem.id, isbn: isbn, title: `Fehler beim Laden (${isbn})`, author: "API Error", genre: "Unknown" };
           }
         });
 
-        // Warten, bis alle OpenLibrary-Anfragen fertig sind
         const resolvedBooks = await Promise.all(fullBooksPromises);
-        // Null-Werte herausfiltern (falls Einträge keine ISBN hatten)
         setBooks(resolvedBooks.filter(b => b !== null));
 
       } catch (err: any) {
@@ -100,6 +95,11 @@ export default function Shelf() {
 
     loadShelfData();
   }, []);
+
+  // NEU: Diese reaktive Funktion wird vom Modal aufgerufen, wenn das Löschen erfolgreich war
+  const handleBookRemovedFromState = (removedId: string) => {
+    setBooks((prevBooks) => prevBooks.filter((book) => book.id !== removedId));
+  };
 
   // Dynamische Genre-Zählung
   const genreCounts = useMemo(() => {
@@ -182,14 +182,14 @@ export default function Shelf() {
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {filteredBooks.map((book) => (
               <div key={book.id} onClick={() => { setSelectedBook(book); setIsModalOpen(true); }} className="group flex flex-col gap-3 cursor-pointer">
-                  {book.coverUrl ? (
-                  <img src={book.coverUrl} alt={book.title} className="w-full aspect-[2/3] object-cover rounded-xl shadow-lg border border-zinc-800 group-hover:border-yellow-400 transition-colors" />) 
-                  : 
-                  (
-                    <div className="w-full aspect-[2/3] bg-zinc-800 rounded-xl shadow-lg border border-zinc-800 group-hover:border-yellow-400 transition-colors flex flex-col items-center justify-center gap-2">
+                {book.coverUrl ? (
+                  <img src={book.coverUrl} alt={book.title} className="w-full aspect-[2/3] object-cover rounded-xl shadow-lg border border-zinc-800 group-hover:border-yellow-400 transition-colors" />
+                ) : (
+                  <div className="w-full aspect-[2/3] bg-zinc-800 rounded-xl shadow-lg border border-zinc-800 group-hover:border-yellow-400 transition-colors flex flex-col items-center justify-center gap-2">
                     <BookOpen className="w-6 h-6 text-zinc-600" />
                     <span className="text-zinc-500 text-xs font-medium">No Cover</span>
-                  </div>)}
+                  </div>
+                )}
                 <div>
                   <h3 className="text-white font-semibold group-hover:text-yellow-400 transition-colors truncate">{book.title}</h3>
                   <p className="text-zinc-400 text-sm truncate">{book.author}</p>
@@ -204,7 +204,14 @@ export default function Shelf() {
         </>
       )}
 
-      <BookModal book={selectedBook} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      {/* MODAL ÜBERGABE: Jetzt vollständig reaktiv parametrisiert */}
+      <BookModal 
+        book={selectedBook} 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        isOwnShelf={true} // Schaltet die Modal-Buttons auf Lösch-Modus
+        onBookRemoved={handleBookRemovedFromState} // Aktualisiert das Grid nach dem Löschen atomar
+      />
     </div>
   );
 }

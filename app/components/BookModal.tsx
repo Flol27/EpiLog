@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { X, Star, User, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { X, Star, User, Plus, Trash2, Loader2 } from "lucide-react";
 import { mockReviews } from "../lib/data";
 
 interface Book {
@@ -12,7 +12,7 @@ interface Book {
   year: number | string; 
   genre: string; 
   cover: string; 
-  coverUrl?: string; // NEU: Für echte Bilder
+  coverUrl?: string; 
   description: string;
 }
 
@@ -20,9 +20,20 @@ interface BookModalProps {
   book: Book | null;
   isOpen: boolean;
   onClose: () => void;
+  isOwnShelf?: boolean; // NEU: Steuert, ob wir im eigenen Regal (Löschen) oder beim Suchen (Hinzufügen) sind
+  onBookRemoved?: (bookId: string) => void; // NEU: Aktualisiert das UI im Shelf sofort ohne Page-Reload
 }
 
-export default function BookModal({ book, isOpen, onClose }: BookModalProps) {
+export default function BookModal({ 
+  book, 
+  isOpen, 
+  onClose, 
+  isOwnShelf = false, 
+  onBookRemoved 
+}: BookModalProps) {
+  
+  const [isSubmitting, setIsSubmitting] = useState(false); // Lade-Indikator gegen Doppelklicks
+
   useEffect(() => {
     if (isOpen) {
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
@@ -47,26 +58,56 @@ export default function BookModal({ book, isOpen, onClose }: BookModalProps) {
     }
 
     try {
+      setIsSubmitting(true);
       const res = await fetch("/api/books", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isbn: book.isbn, title: book.title }),
-        credentials: "include", // Schickt das verschlüsselte JWT HTTP-Only Cookie sicher mit
+        credentials: "include",
       });
 
-      // if (!res.ok) {
-      //   if (res.status === 401) throw new Error("Nicht autorisiert. Bitte logge dich neu ein.");
-      //   throw new Error("Fehler beim Speichern in der Datenbank.");
-      // }
+      //if (!res.ok) throw new Error("Fehler beim Hinzufügen des Buches.");
 
       alert(`"${book.title}" wurde deinem Shelf hinzugefügt!`);
-      onClose(); // Schließt das Modal automatisch nach Erfolg
+      onClose(); 
     } catch (error: any) {
       console.error("DB-Fehler:", error);
       alert(error.message || "Etwas ist schiefgelaufen.");
     } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRemoveFromShelf = async () => {
+    if (!confirm(`Möchtest du "${book.title}" wirklich aus deinem Regal löschen?`)) {
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      
+      // Nutzt die relationale ID des Buch-Eintrags aus deiner SQLite-Datenbank
+      const res = await fetch(`/api/books?id=${book.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      // if (!res.ok) {
+      //   if (res.status === 401) throw new Error("Nicht autorisiert. Bitte logge dich neu ein.");
+      //   throw new Error("Fehler beim Löschen aus der Datenbank.");
+      // }
+
+      // Wenn die übergeordnete Shelf-Komponente eine Update-Funktion mitgegeben hat, rufen wir sie auf
+      if (onBookRemoved) {
+        onBookRemoved(book.id);
+      }
+
+      onClose(); // Schließt das Modal nach erfolgreichem Löschen
+    } catch (error: any) {
+      console.error("Lösch-Fehler:", error);
+      alert(error.message || "Das Buch konnte nicht gelöscht werden.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -80,7 +121,7 @@ export default function BookModal({ book, isOpen, onClose }: BookModalProps) {
 
         <div className="flex flex-col md:flex-row gap-8 items-start mt-4">
           
-          {/* Dynamische Cover-Anzeige: Bild oder Farbe */}
+          {/* Dynamische Cover-Anzeige */}
           <div className={`w-40 md:w-56 aspect-[2/3] shrink-0 rounded-2xl shadow-xl border border-zinc-800 overflow-hidden ${!book.coverUrl ? book.cover : 'bg-zinc-900'}`}>
             {book.coverUrl ? (
               <img src={book.coverUrl} alt={book.title} className="w-full h-full object-cover" />
@@ -102,16 +143,38 @@ export default function BookModal({ book, isOpen, onClose }: BookModalProps) {
             
             <p className="text-zinc-300 leading-relaxed mt-2">{book.description}</p>
 
-            <button onClick={handleAddToShelf}
-             className="flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white font-medium px-5 py-3 rounded-xl transition-colors mt-4 w-fit border border-zinc-700 hover:border-zinc-500">
-              <Plus className="w-5 h-5" />
-              Add to My Shelf
-            </button>
+            {/* DYNAMISCHE BUTTONS: Basierend auf dem aktuellen Standort (isOwnShelf) */}
+            {isOwnShelf ? (
+              <button 
+                onClick={handleRemoveFromShelf}
+                disabled={isSubmitting}
+                className="flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-medium px-5 py-3 rounded-xl transition-colors mt-4 w-fit disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <><Loader2 className="w-5 h-5 animate-spin" /> Deleting...</>
+                ) : (
+                  <><Trash2 className="w-5 h-5" /> Remove from Shelf</>
+                )}
+              </button>
+            ) : (
+              <button 
+                onClick={handleAddToShelf}
+                disabled={isSubmitting}
+                className="flex items-center justify-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-5 py-3 rounded-xl transition-colors mt-4 w-fit disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-yellow-400/10"
+              >
+                {isSubmitting ? (
+                  <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</>
+                ) : (
+                  <><Plus className="w-5 h-5" /> Add to My Shelf</>
+                )}
+              </button>
+            )}
           </div>
         </div>
 
         <hr className="border-zinc-800/50 my-8" />
 
+        {/* Reviews */}
         <div>
           <h3 className="text-xl font-bold text-white mb-4">Community Reviews</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
