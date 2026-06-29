@@ -20,7 +20,6 @@
 | **Peter** | Backend, Funktionalität | 15h | 25% |
 | **Marcel** | Frontend, UI | 15h | 25% |
 | **Rudi** | Datenbank, API | 15h | 25% |
-| **Gesamt** | | **60h** | **100%** |
 
 ---
 
@@ -55,7 +54,8 @@ npm install
 cp example.env .env
 nano .env
 ```
-> [!TIP] env file
+> [!TIP]
+> Setup env file:
 >```env
 >ADMIN_EMAIL="admin@epilog.com"
 >ADMIN_PASSWORD="admin"
