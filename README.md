@@ -4,7 +4,7 @@
 
 ## ✨ Features
 
-- 🔍 **ISBN-Scan** – Bücher per Barcode-Scanner oder Suche über Google Books API erfassen
+- 🔍 **ISBN-Scan** – Bücher per Barcode-Scanner oder Suche über Open Library API erfassen
 - 📖 **Leseregal** – Bücher mit Status verwalten: *Möchte lesen / Lese gerade / Abgeschlossen*
 - 📊 **Lesestatistiken** – Fortschritt in Seiten, Bücher pro Monat, Gesamtstatistik
 - ⭐ **Bewertungen & Kommentare** – Bücher bewerten und Rezensionen schreiben
@@ -55,7 +55,8 @@ npm install
 cp example.env .env
 nano .env
 ```
-> [!TIP]- env-File
+> [!TIP]
+> env file
 >```env
 >ADMIN_EMAIL="admin@epilog.com"
 >ADMIN_PASSWORD="admin"
