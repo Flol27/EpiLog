@@ -1,9 +1,32 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Target, Star, Flame, ArrowRight, TrendingUp } from "lucide-react";
 
 export default function Dashboard() {
+  const [firstname, setFirstname] = useState("...");
+  const [bookCount, setBookCount] = useState(0);
+
+  useEffect(() => {
+    // Load real user data from /api/me (uses session cookie, not hardcoded userId)
+    fetch("/api/me")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.user?.firstname) setFirstname(d.user.firstname);
+      })
+      .catch(() => {});
+
+    // Load real book count
+    fetch("/api/books", { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => {
+        const items = Array.isArray(d) ? d : d.books || [];
+        setBookCount(items.length);
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="w-full flex flex-col gap-8">
 
@@ -11,7 +34,7 @@ export default function Dashboard() {
         <section className="border-b border-white/10 pb-8">
           <p className="text-zinc-500 tracking-[0.3em] text-xs mb-4">YOUR READING YEAR 2026</p>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-3">
-            Welcome back, <span className="italic font-serif text-yellow-400">Alex.</span>
+            Welcome back, <span className="italic font-serif text-yellow-400">{firstname}.</span>
           </h1>
           <div className="flex items-center gap-2 text-zinc-400">
             <Flame className="w-5 h-5 text-yellow-400 fill-yellow-400" />
@@ -21,7 +44,7 @@ export default function Dashboard() {
       </Reveal>
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-        <StatCard index={0} icon={BookOpen} num="12" label="Books 2026" />
+        <StatCard index={0} icon={BookOpen} num={String(bookCount)} label="Books 2026" />
         <StatCard index={1} icon={Target} num="4,234" label="Pages read" />
         <StatCard index={2} icon={Star} num="4.3" label="Avg. rating" />
         <StatCard index={3} icon={Flame} num="15" label="Day streak" highlight />
