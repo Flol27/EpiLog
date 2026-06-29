@@ -126,3 +126,76 @@ export async function POST(request, { params }) {
         );
     }
 }
+
+
+import { unlink } from 'fs/promises'; // Oben zu den Imports hinzufügen, falls noch nicht da
+
+/**
+ * @swagger
+ * /api/users/{id}/avatar:
+ * delete:
+ * summary: Profilbild löschen
+ * tags: [Users]
+ * parameters:
+ * - in: path
+ * name: id
+ * required: true
+ * schema:
+ * type: integer
+ * responses:
+ * 200:
+ * description: Profilbild erfolgreich gelöscht
+ * 401:
+ * description: Nicht autorisiert
+ * 404:
+ * description: Nutzer oder Bild nicht gefunden
+ * 500:
+ * description: Serverfehler
+ */
+export async function DELETE(request, { params }) {
+    try {
+        if (!await authorized('user', request)) { return response.NOTAUTHORIZED(); }
+
+        const { id } = await params;
+        const userId = parseInt(id, 10);
+
+        // 1. Aktuelles Bild aus der DB holen
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { profilePic: true }
+        });
+
+        if (!user) {
+            return NextResponse.json({ error: 'Nutzer nicht gefunden' }, { status: 404 });
+        }
+
+        // 2. Falls ein Bild existiert, Datei vom Server löschen
+        if (user.profilePic) {
+            const filepath = path.join(process.cwd(), 'public', user.profilePic);
+            try {
+                await unlink(filepath);
+            } catch (fileError) {
+                // Falls die Datei im Dateisystem gar nicht existiert, loggen wir es nur,
+                // blockieren aber nicht das Zurücksetzen der Datenbank.
+                console.error('Datei konnte nicht gelöscht werden:', fileError.message);
+            }
+        }
+
+        // 3. Datenbank-Eintrag zurücksetzen (auf null oder leeren String)
+        await prisma.user.update({
+            where: { id: userId },
+            data: { profilePic: null }
+        });
+
+        return NextResponse.json({ message: 'Profilbild erfolgreich gelöscht' }, { status: 200 });
+
+    } catch (error) {
+        return NextResponse.json(
+            {
+                error: 'Fehler beim Löschen des Profilbilds',
+                message: error.message
+            },
+            { status: 500 }
+        );
+    }
+}
