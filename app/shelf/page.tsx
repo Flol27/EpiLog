@@ -36,10 +36,10 @@ export default function Shelf() {
         });
 
         // Error-Handling sauber aktiviert für den JWT-Schutz
-        // if (!res.ok) {
-        //   if (res.status === 401) throw new Error("Nicht autorisiert. Bitte logge dich neu ein.");
-        //   throw new Error("Fehler beim Laden der DB-Einträge.");
-        // }
+        if (!res.ok) {
+          if (res.status === 401) throw new Error("Nicht autorisiert. Bitte logge dich neu ein.");
+          throw new Error("Fehler beim Laden der DB-Einträge.");
+        }
 
         const dbItems = await res.json();
         const itemsArray = Array.isArray(dbItems) ? dbItems : dbItems.books || [];

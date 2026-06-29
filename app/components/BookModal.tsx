@@ -66,7 +66,7 @@ export default function BookModal({
         credentials: "include",
       });
 
-      //if (!res.ok) throw new Error("Fehler beim Hinzufügen des Buches.");
+      if (!res.ok) throw new Error("Fehler beim Hinzufügen des Buches.");
 
       alert(`"${book.title}" wurde deinem Shelf hinzugefügt!`);
       onClose(); 
@@ -92,10 +92,10 @@ export default function BookModal({
         credentials: "include",
       });
 
-      // if (!res.ok) {
-      //   if (res.status === 401) throw new Error("Nicht autorisiert. Bitte logge dich neu ein.");
-      //   throw new Error("Fehler beim Löschen aus der Datenbank.");
-      // }
+      if (!res.ok) {
+        if (res.status === 401) throw new Error("Nicht autorisiert. Bitte logge dich neu ein.");
+        throw new Error("Fehler beim Löschen aus der Datenbank.");
+      }
 
       // Wenn die übergeordnete Shelf-Komponente eine Update-Funktion mitgegeben hat, rufen wir sie auf
       if (onBookRemoved) {
