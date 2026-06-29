@@ -21,7 +21,7 @@ export async function authorized(role, request) {
         const token = request.cookies.get('session')?.value;
         if (!token) return false;
         const { payload } = await jwtVerify(token, secret);
-        return payload.role === role || payload.role === 'admin';
+        if(payload.role === role || payload.role === 'admin') return payload.userId;
     } catch {
         return false;
     }
