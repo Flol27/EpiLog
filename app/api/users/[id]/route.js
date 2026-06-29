@@ -1,26 +1,51 @@
 import { NextResponse } from 'next/server';
+import { prisma } from "@/lib/prisma";
 import * as argon2 from 'argon2';
-import { openDb } from '@/app/lib/db';
 import { authorized } from '@/app/lib/auth';
 import * as response from '@/app/lib/response';
 import * as tools from '@/app/lib/tools';
 
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   get:
+ *     summary: Nutzer abrufen
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Nutzer
+ *       401:
+ *         description: Nicht autorisiert
+ *       500:
+ *         description: Serverfehler
+ */
+export async function GET(request, { params }){
+    try{
 
-export async function GET(request, { params }) {
-    try {
-
-        if (!authorized('admin')) {return response.NOTAUTHORIZED;}
+        if (!await authorized('user', request)) {return response.NOTAUTHORIZED();}
 
         const { id } = await params;
-        const db = await openDb();
-        const user = db.prepare('SELECT id, email, firstname, lastname FROM users WHERE id = ?').get(id);
+        const userId = parseInt(id, 10);
 
-        if(!user) return NextResponse.json({error:"User nicht gefunden", id:id}, {status:400});
-        return NextResponse.json(user, { status: 200 });
+        const user = await prisma.user.findUnique({
+            where: { id:userId },
+            omit: {
+                password: true
+            }
+        });
 
-    } catch (error) {
+        return NextResponse.json({user:user},{ status: 200 });
+
+    } catch(error){
         return NextResponse.json(
-            { error: 'Fehler beim Abrufen der Nutzerdaten',
+            {
+                error: 'Fehler beim Abrufen der Nutzerdaten',
                 message: error.message
             },
             { status: 500 }
@@ -28,47 +53,108 @@ export async function GET(request, { params }) {
     }
 }
 
+
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   put:
+ *     summary: Nutzer aktualisieren
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               firstname:
+ *                 type: string
+ *               lastname:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *               quote:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *               readStreak:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Nutzer aktualisiert
+ *       400:
+ *         description: Keine gültigen Daten
+ *       401:
+ *         description: Nicht autorisiert
+ *       404:
+ *         description: Nutzer nicht gefunden
+ *       500:
+ *         description: Serverfehler
+ */
 export async function PUT(request, { params }) {
     try {
 
         let admin = false;
 
-        if (authorized('admin')) {admin = true;}
-        else if (authorized('user')) {admin = false;}
-        else {return response.NOTAUTHORIZED;}
+        if (await authorized('admin', request)) {admin = true;}
+        else if (await authorized('user', request)) {admin = false;}
+        else {return response.NOTAUTHORIZED();}
 
         const { id } = await params;
-        const { email, password, firstname, lastname, role } = await request.json();
+        const userId = parseInt(id, 10);
+        const { email, password, username, firstname, lastname, role, readStreak, quote, status } = await request.json();
 
-        let fields = [];
-        let values = [];
 
-        // Check fields
-        if(email){fields.push("email = ?");values.push(email);}
-        if(password){fields.push("password = ?");values.push(await argon2.hash(password));}
-        if(firstname){fields.push("firstname = ?");values.push(firstname);}
-        if(lastname){fields.push("lastname = ?");values.push(lastname);}
-        if(role){if(admin){fields.push("role = ?");values.push(role);}}
+        // Dynamisches Update-Objekt aufbauen
+        const data = {};
+        if (tools.checkEmail(email))        { data.email             = email; }
+        if (tools.checkPassword(password))  { data.password          = await argon2.hash(password); }
+        if (tools.checkUsername(username))  { data.username          = username; }
+        if (tools.checkName(firstname))     { data.firstname         = firstname; }
+        if (tools.checkName(lastname))      { data.lastname          = lastname; }
+        if (tools.checkRole(role) && admin) { data.role              = role; }
+        if (tools.checkText(quote))         { data.quote             = quote; }
+        if (tools.checkText(status))        { data.status            = status; }
+        if (tools.checkNum(readStreak))     { data.readStreak        = readStreak; }
+        if (data.readStreak)                { data.readStreakUpdated = new Date(); }
 
-        if(fields.length === 0) return NextResponse.json({error: 'Keine Daten, oder nicht genug Rechte.'},{ status: 400 });
 
-        const db = await openDb();
 
-        const result = db.prepare(`UPDATE users SET ${fields.join(", ")} WHERE id = ?`).run(...values, id);
+        if(Object.keys(data).length === 0){
+            return NextResponse.json({error: 'Keine oder falsche Daten oder nicht genug Rechte.'}, { status: 400 });
+        }
 
-        if(result.changes == 0) return NextResponse.json({error: 'Nicht gefunden.', id:id},{ status: 404 });
 
-        const user = db.prepare('SELECT id, email, firstname, lastname, role FROM users WHERE id = ?').get(id);
+        const user = await prisma.user.update({
+            where: { id: userId },
+            data,
+            omit: {
+                password: true
+            }
+        });
 
         return NextResponse.json(
             {
-                message: 'Nutzer erfolgreich geändert',
-                user
+                user:user
             },
             { status: 201 }
         );
 
     } catch (error) {
+        if (error.code === 'P2025') {
+            return NextResponse.json({ error: 'Nutzer nicht gefunden.'}, { status: 404 });
+        }
         return NextResponse.json(
             {
                 error: 'Fehler beim Erstellen des Nutzers',
@@ -79,21 +165,48 @@ export async function PUT(request, { params }) {
     }
 }
 
-export async function DELETE(request, { params }) {
-    try {
 
-        if (!authorized('admin')) {return response.NOTAUTHORIZED;}
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   delete:
+ *     summary: Nutzer löschen
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Nutzer gelöscht
+ *       401:
+ *         description: Nicht autorisiert
+ *       500:
+ *         description: Serverfehler
+ */
+export async function DELETE(request, { params }){
+    try{
+
+        if (!await authorized('admin', request)) {return response.NOTAUTHORIZED();}
 
         const { id } = await params;
-        const db = await openDb();
-        const stmt = db.prepare('DELETE FROM users WHERE id = ?').run(id);
+        const userId = parseInt(id, 10);
 
-        if(stmt.changes < 1){return NextResponse.json({ error:"Kein User gefunden"}, { status: 400 });}
-        return NextResponse.json({message:"User gelöscht"}, { status: 200 });
+        const user = await prisma.user.delete({
+            where: { id:userId },
+            omit: {
+                password: true
+            }
+        });
 
-    } catch (error) {
+        return NextResponse.json({ user:user }, { status: 200 });
+
+    } catch(error){
         return NextResponse.json(
-            { error: 'Fehler beim Löschen des Nutzers',
+            {
+                error: 'Fehler beim Löschen des Nutzers',
                 message: error.message
             },
             { status: 500 }

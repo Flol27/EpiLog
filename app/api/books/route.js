@@ -1,122 +1,117 @@
 import { NextResponse } from 'next/server';
-import { openDb } from '@/app/lib/db';
+import { prisma } from "@/lib/prisma";
 import { authorized } from '@/app/lib/auth';
 import * as response from '@/app/lib/response';
+import * as tools from '@/app/lib/tools';
 
 
-export async function GET() {
-    try {
-        if (!authorized('user')) return response.NOTAUTHORIZED;
+/**
+ * @swagger
+ * /api/books:
+ *   get:
+ *     summary: Alle Bücher abrufen
+ *     tags: [Books]
+ *     responses:
+ *       200:
+ *         description: Liste aller Bücher
+ *       401:
+ *         description: Nicht autorisiert
+ *       500:
+ *         description: Serverfehler
+ */
+export async function GET(request){
+    try{
 
-        const db = await openDb();
+        if (!await authorized('user', request)) {return response.NOTAUTHORIZED();}
 
-        // BEGIN CLAUDE
-        const rows = await db.prepare(`
-        SELECT
-        b.id, b.title, b.subtitle, b.description,
-        b.isbn, b.pages, b.pub_year, b.picture,
-        p.id AS publisher_id, p.name AS publisher_name,
-        (
-            SELECT JSON_GROUP_ARRAY(JSON_OBJECT('id', a.id, 'name', a.name))
-            FROM authors a
-            JOIN book_author ba ON a.id = ba.a_id
-            WHERE ba.b_id = b.id
-        ) AS authors,
-        (
-            SELECT JSON_GROUP_ARRAY(JSON_OBJECT('id', g.id, 'name', g.name))
-            FROM genres g
-            JOIN book_genres bg ON g.id = bg.g_id
-            WHERE bg.b_id = b.id
-        ) AS genres
-        FROM books b
-        LEFT JOIN publisher p ON b.publisher_id = p.id
-        GROUP BY b.id
-        `).all();
+        const books = await prisma.book.findMany({
+            select: {
+                id:    true,
+                isbn:  true,
+                title: true
+            }
+        });
 
-        const books = rows.map(b => ({
-            id:          b.id,
-            title:       b.title,
-            subtitle:    b.subtitle,
-            description: b.description,
-            isbn:        b.isbn,
-            pages:       b.pages,
-            pub_year:    b.pub_year,
-            picture:     b.picture,
-            publisher:   b.publisher_id
-            ? { id: b.publisher_id, name: b.publisher_name }
-            : null,
-            authors: JSON.parse(b.authors ?? '[]'),
-                                     genres:  JSON.parse(b.genres  ?? '[]'),
-        }));
-        // END CLAUDE
+        return NextResponse.json({books:books}, { status: 200 });
 
-        return NextResponse.json(books, { status: 200 });
-
-    } catch (error) {
+    } catch(error){
         return NextResponse.json(
-            { error: 'Fehler beim Abrufen der Daten', message: error.message },
+            {
+                error: 'Fehler beim Abrufen der Nutzerdaten',
+                message: error.message
+            },
             { status: 500 }
         );
     }
 }
 
-// BEGIN CLAUDE
-export async function POST(request) {
-    try {
 
-        if (!authorized('user')) return response.NOTAUTHORIZED;
+/**
+ * @swagger
+ * /api/books:
+ *   post:
+ *     summary: Buch anlegen
+ *     tags: [Books]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - isbn
+ *             properties:
+ *               isbn:
+ *                 type: string
+ *               title:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Buch angelegt
+ *       400:
+ *         description: Ungültige Daten
+ *       401:
+ *         description: Nicht autorisiert
+ *       500:
+ *         description: Serverfehler
+ */
+export async function POST(request){
+    try{
 
-        const { title, subtitle, description, isbn, pages, pub_year, publisher_id, picture } = await request.json();
+        if (!await authorized('user', request)) {return response.NOTAUTHORIZED();}
 
-        if (!title) {
+        const { isbn, title } = await request.json();
+
+        if (!isbn) {
             return NextResponse.json(
-                { error: 'Titel ist erforderlich' },
+                { error: 'ISBN ist erforderlich' },
                 { status: 400 }
             );
         }
 
-        const db = await openDb();
+        if(!tools.checkISBN(isbn))       return response.WRONGDATA("ISBN überprüfen",   isbn);
 
-        const result = db.prepare(
-            `INSERT INTO books (title, subtitle, description, isbn, pages, pub_year, publisher_id, picture)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-        ).run(title, subtitle ?? null, description ?? null, isbn ?? null, pages ?? null, pub_year ?? null, publisher_id ?? null, picture ?? null);
-
-        const book = db.prepare(
-            `SELECT b.id, b.title, b.subtitle, b.description, b.isbn, b.pages, b.pub_year, b.picture,
-            p.id AS publisher_id, p.name AS publisher_name
-            FROM books b
-            LEFT JOIN publisher p ON b.publisher_id = p.id
-            WHERE b.id = ?`
-        ).get(result.lastInsertRowid);
+        const book = await prisma.book.create({
+            data:{
+                isbn:  isbn,
+                title: title
+            }
+        });
 
         return NextResponse.json(
             {
-                message: 'Buch erfolgreich angelegt',
-                book: {
-                    id:          book.id,
-                    title:       book.title,
-                    subtitle:    book.subtitle,
-                    description: book.description,
-                    isbn:        book.isbn,
-                    pages:       book.pages,
-                    pub_year:    book.pub_year,
-                    picture:     book.picture,
-                    publisher:   book.publisher_id
-                    ? { id: book.publisher_id, name: book.publisher_name }
-                    : null,
-                    authors: [],
-                    genres:  [],
-                }
+                book:book
             },
             { status: 201 }
         );
 
-    } catch (error) {
+    } catch(error){
         return NextResponse.json(
-            { error: 'Fehler beim Erstellen des Buches', message: error.message },
+            {
+                error: 'Fehler beim Abrufen der Buchdaten',
+                message: error.message
+            },
             { status: 500 }
         );
     }
 }
-// END CLAUDE

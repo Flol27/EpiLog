@@ -9,9 +9,9 @@ export async function createSession(userId) {
     const cookieStore = await cookies();
     cookieStore.set('auth_token', sessionToken, {
         httpOnly: true, // Schützt vor Diebstahl per JavaScript (XSS)
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
     });
 
     // Nutzer auf das geschützte Dashboard schicken

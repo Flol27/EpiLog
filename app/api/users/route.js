@@ -1,61 +1,131 @@
 import { NextResponse } from 'next/server';
+import { prisma } from "@/lib/prisma";
 import * as argon2 from 'argon2';
-import { openDb } from '@/app/lib/db';
 import { authorized } from '@/app/lib/auth';
 import * as response from '@/app/lib/response';
+import * as tools from '@/app/lib/tools';
 
+/**
+ * @swagger
+ * /api/users:
+ *   get:
+ *     summary: Alle Nutzer abrufen
+ *     tags:
+ *       - Users
+ *     responses:
+ *       200:
+ *         description: Liste aller Nutzer
+ *       401:
+ *         description: Nicht autorisiert
+ *       500:
+ *         description: Serverfehler
+ */
+export async function GET(request){
+    try{
 
-export async function GET() {
-    try {
+        if (!await authorized('user', request)) {return response.NOTAUTHORIZED();}
 
-        if (!authorized('admin')) {return response.NOTAUTHORIZED;}
+        const users = await prisma.user.findMany({
+            omit: { //alles ausser ...
+                password: true
+            }
+        });
 
-        const db = await openDb();
-        const users = await db.prepare('SELECT id, email, firstname, lastname, password FROM users').all(); // Passwort hier weglassen!
+        return NextResponse.json({users:users}, { status: 200 });
 
-        return NextResponse.json(users, { status: 200 });
-
-    } catch (error) {
+    } catch(error){
         return NextResponse.json(
-            { error: 'Fehler beim Abrufen der Nutzerdaten',
-              message: error.message
+            {
+                error: 'Fehler beim Abrufen der Nutzerdaten',
+                message: error.message
             },
             { status: 500 }
         );
     }
 }
 
-export async function POST(request) {
-    try {
 
-        if (!authorized('admin')) {return response.NOTAUTHORIZED;}
+/**
+ * @swagger
+ * /api/users:
+ *   post:
+ *     summary: Nutzer anlegen
+ *     tags:
+ *       - Users
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - username
+ *               - password
+ *               - firstname
+ *             properties:
+ *               email:
+ *                 type: string
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               firstname:
+ *                 type: string
+ *               lastname:
+ *                 type: string
+ *               quote:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Nutzer erfolgreich angelegt
+ *       400:
+ *         description: Pflichtfelder fehlen
+ *       500:
+ *         description: Serverfehler
+ */
+export async function POST(request){
+    try{
 
+        const { email, username, password, firstname, lastname, quote, status } = await request.json();
 
-        const { email, password, firstname } = await request.json();
-        if (!email || !password || !firstname) {
+        if (!email || !username || !password || !firstname) {
             return NextResponse.json(
-                { error: 'E-Mail, Passwort und Name sind erforderlich' },
+                { description: 'E-Mail, Username, Passwort und Name sind erforderlich' },
                 { status: 400 }
             );
         }
 
-        const hash = await argon2.hash(password); // '+' für schnelle umwandlung in Int
+        const data = {};
+        if (tools.checkEmail(email))        { data.email     = email; }
+        if (tools.checkPassword(password))  { data.password  = await argon2.hash(password); }
+        if (tools.checkUsername(username))  { data.username  = username; }
+        if (tools.checkName(firstname))     { data.firstname = firstname; }
+        if (tools.checkName(lastname))      { data.lastname  = lastname; }
+        if (tools.checkText(quote))         { data.quote     = quote; }
+        if (tools.checkText(status))        { data.status    = status; }
 
-        const db = await openDb();
-        const result = db.prepare('INSERT INTO users (email, password, firstname) VALUES (?, ?, ?)').run(email, hash, firstname);
+
+        const user = await prisma.user.create({
+            data:data,
+            omit: {
+                password: true
+            }
+        });
 
         return NextResponse.json(
             {
-                message: 'Nutzer erfolgreich angelegt',
-                id: result.lastID
+                user:user
             },
             { status: 201 }
         );
 
-    } catch (error) {
+    } catch(error){
         return NextResponse.json(
             {
-                error: 'Fehler beim Erstellen des Nutzers',
+                error: 'Fehler beim Abrufen der Nutzerdaten',
                 message: error.message
             },
             { status: 500 }
