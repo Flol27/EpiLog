@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 export function NOTAUTHORIZED(){
     return NextResponse.json(
-        { description: 'Nicht autorisiert. Bitte zuerst einloggen.' },
+        { error: 'Nicht autorisiert. Bitte zuerst einloggen.' },
         { status: 401 }
     );
 }
@@ -12,7 +12,7 @@ export function NOTAUTHORIZED(){
 export function WRONGDATA(message, item){
     return NextResponse.json(
     {
-        description:message,
+        error:message,
         item:item
     },
     { status: 400 }
