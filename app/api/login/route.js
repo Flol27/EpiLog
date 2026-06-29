@@ -12,7 +12,7 @@ const rateLimiter = new RateLimiterMemory({
 
 /**
  * @swagger
- * /api/auth/login:
+ * /api/login:
  *   post:
  *     summary: Einloggen
  *     tags: [Auth]

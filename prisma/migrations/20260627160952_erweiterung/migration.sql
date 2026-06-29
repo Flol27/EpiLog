@@ -1,5 +1,0 @@
--- AlterTable
-ALTER TABLE "User" ADD COLUMN "created_at" DATETIME;
-ALTER TABLE "User" ADD COLUMN "profilePic" TEXT;
-ALTER TABLE "User" ADD COLUMN "quote" TEXT;
-ALTER TABLE "User" ADD COLUMN "status" TEXT;

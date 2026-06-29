@@ -111,8 +111,6 @@ export async function PUT(request, { params }) {
 
         let admin = false;
         const userId = await authorized('user', request);
-        console.log(id);
-        console.log(userId);
 
         if (await authorized('admin', request)) {admin = true;}
 
