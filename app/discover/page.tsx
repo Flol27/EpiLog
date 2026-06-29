@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Compass, Search, Loader2, ScanLine, X, BookOpen } from "lucide-react";
-import { mockBooks } from "../lib/data";
+import { Compass, Search, Loader2, ScanLine, BookOpen, X } from "lucide-react";
 import BookModal from "../components/BookModal";
 
 // ── Typen ──────────────────────────────────────────
@@ -19,7 +18,6 @@ interface ScannedBook {
 
 async function fetchBookByISBN(isbn: string): Promise<ScannedBook | null> {
   try {
-    // Buch aus der OpenLibrary-API abrufen
     const res = await fetch(`/api/openlibrary_search?q=${encodeURIComponent(isbn)}`);
     if (!res.ok) return null;
     const data = await res.json();
@@ -62,7 +60,6 @@ function ScanModal({ onClose }: { onClose: () => void }) {
         ScanbotSdkRef.current = sdk;
         setSdkReady(true);
 
-        // Scanner direkt starten
         const config = new sdk.UI.Config.BarcodeScannerScreenConfiguration();
         config.palette.sbColorPrimary = "#FACC15";
         config.palette.sbColorSecondary = "#FACC15";
@@ -135,28 +132,17 @@ function ScanModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-[#121214] border border-zinc-800 rounded-3xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-[#121214] border border-zinc-800 rounded-3xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <ScanLine className="w-5 h-5 text-yellow-400" /> Scan ISBN
           </h2>
-          <button
-            onClick={onClose}
-            className="text-zinc-400 hover:text-white transition-colors bg-zinc-900 p-2 rounded-full"
-          >
+          <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors bg-zinc-900 p-2 rounded-full">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Scan Button – nur wenn kein Ergebnis */}
         {!result && (
           <button
             onClick={startScanner}
@@ -171,7 +157,6 @@ function ScanModal({ onClose }: { onClose: () => void }) {
           </button>
         )}
 
-        {/* Laden */}
         {loading && (
           <div className="flex items-center gap-3 text-zinc-400 py-4 justify-center">
             <Loader2 className="w-5 h-5 animate-spin text-yellow-400" />
@@ -179,7 +164,6 @@ function ScanModal({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        {/* Fehler */}
         {error && !loading && (
           <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 flex items-center gap-2 mb-4">
             <X className="w-4 h-4 text-red-400 shrink-0" />
@@ -190,16 +174,11 @@ function ScanModal({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        {/* Buch-Ergebnis */}
         {result && !loading && (
           <div className="flex flex-col gap-4 animate-in fade-in duration-300">
             <div className="flex gap-4 items-start">
               {result.cover ? (
-                <img
-                  src={result.cover}
-                  alt={result.title}
-                  className="w-20 h-28 object-cover rounded-xl border border-zinc-800 shrink-0"
-                />
+                <img src={result.cover} alt={result.title} className="w-20 h-28 object-cover rounded-xl border border-zinc-800 shrink-0" />
               ) : (
                 <div className="w-20 h-28 bg-zinc-800 rounded-xl flex items-center justify-center shrink-0">
                   <BookOpen className="w-6 h-6 text-zinc-600" />
@@ -215,17 +194,12 @@ function ScanModal({ onClose }: { onClose: () => void }) {
                 </div>
               </div>
             </div>
-            <p className="text-zinc-400 text-sm leading-relaxed line-clamp-3">
-              {result.description}
-            </p>
+            <p className="text-zinc-400 text-sm leading-relaxed line-clamp-3">{result.description}</p>
             <div className="flex gap-3">
               <button className="flex-1 bg-yellow-400 text-black font-bold py-2.5 rounded-xl hover:bg-yellow-500 transition-colors text-sm">
                 + Add to Shelf
               </button>
-              <button
-                onClick={reset}
-                className="px-4 py-2.5 rounded-xl border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors text-sm"
-              >
+              <button onClick={reset} className="px-4 py-2.5 rounded-xl border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors text-sm">
                 Scan Again
               </button>
             </div>
@@ -242,22 +216,124 @@ export default function Discover() {
   const [debouncedTerm, setDebouncedTerm] = useState("");
   const [apiResults, setApiResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  
+  const [recommendedBooks, setRecommendedBooks] = useState<any[]>([]);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(true);
+  const [favoriteAuthor, setFavoriteAuthor] = useState<string | null>(null);
+
   const [selectedBook, setSelectedBook] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isScanOpen, setIsScanOpen] = useState(false);
 
-  // Suche erst starten, wenn der Benutzer 500ms lang nichts eingegeben hat
+  // ── RECO-ENGINE: FILTERT BEREITS GESPEICHERTE BÜCHER AUS ──
+  useEffect(() => {
+    async function calculateRecommendations() {
+      try {
+        setIsLoadingRecommendations(true);
+
+        // 1. Hole alle Bücher aus dem eigenen Shelf des Nutzers
+        const res = await fetch("/api/books", { credentials: "include" });
+        if (!res.ok) throw new Error("Konnte User-Shelf nicht laden.");
+        
+        const dbItems = await res.json();
+        const itemsArray = Array.isArray(dbItems) ? dbItems : dbItems.books || [];
+
+        if (itemsArray.length === 0) {
+          setIsLoadingRecommendations(false);
+          return;
+        }
+
+        // NEU: Erstelle ein Set aller bereits gespeicherten ISBNs für einen O(1) Abgleich
+        const ownedIsbns = new Set<string>(
+          itemsArray.map((item: any) => item.isbn).filter(Boolean)
+        );
+
+        // 2. Parallel die Live-Autorendaten von OpenLibrary für die ISBNs auflösen
+        const authorPromises = itemsArray.map(async (item: any) => {
+          if (!item.isbn) return null;
+          try {
+            const olRes = await fetch(`/api/openlibrary_search?q=${encodeURIComponent(item.isbn)}`);
+            if (!olRes.ok) return null;
+            const data = await olRes.json();
+            return data && data.length > 0 ? data[0].author : null;
+          } catch {
+            return null;
+          }
+        });
+
+        const resolvedAuthors = await Promise.all(authorPromises);
+
+        // 3. Frequenz-Analyse (Häufigkeitsverteilung des Lieblingsautors)
+        const frequencyMap: Record<string, number> = {};
+        let maxCount = 0;
+        let topAuthor: string | null = null;
+
+        resolvedAuthors.forEach((author) => {
+          if (!author || author === "Unknown Author") return;
+          frequencyMap[author] = (frequencyMap[author] ?? 0) + 1;
+          if (frequencyMap[author] > maxCount) {
+            maxCount = frequencyMap[author];
+            topAuthor = author;
+          }
+        });
+
+        if (!topAuthor) {
+          setIsLoadingRecommendations(false);
+          return;
+        }
+
+        setFavoriteAuthor(topAuthor);
+
+        // 4. Top-Bücher dieses Autors abrufen
+        const olAuthorRes = await fetch(`/api/openlibrary_search?q=${encodeURIComponent(topAuthor)}`);
+        if (olAuthorRes.ok) {
+          const authorWorks = await olAuthorRes.json();
+          
+          // NEU: Filtere alle Bücher heraus, deren ISBN bereits im ownedIsbns-Set existiert!
+          const filteredWorks = authorWorks.filter((b: any) => {
+            if (!b.isbn) return true; // Ohne ISBN behalten wir es testweise bei
+            return !ownedIsbns.has(b.isbn); // NUR behalten, wenn NICHT im Shelf vorhanden
+          });
+
+          // Mappe maximal 5 noch nicht im Regal liegende Bücher
+          const structuresRecs = filteredWorks
+            .slice(0, 5)
+            .map((b: any, i: number) => ({
+              id: `rec-${i}`,
+              title: b.title || "Unknown Title",
+              isbn: b.isbn,
+              author: b.author || topAuthor,
+              year: b.publishDate || "Unknown",
+              genre: b.genres || "Fiction",
+              coverUrl: b.coverKey ? `https://covers.openlibrary.org/b/olid/${b.coverKey}-L.jpg` : null,
+              cover: "bg-zinc-800",
+              description: `Empfohlen, weil du gerne Bücher von ${topAuthor} liest und dieses Werk noch fehlt.`,
+            }));
+
+          setRecommendedBooks(structuresRecs);
+        }
+      } catch (err) {
+        console.error("Fehler im Empfehlungs-Algorithmus:", err);
+      } finally {
+        setIsLoadingRecommendations(false);
+      }
+    }
+
+    calculateRecommendations();
+  }, []);
+
+  // Debounce-Timer für die Freitextsuche (500ms)
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedTerm(searchTerm), 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  // Freitextsuche ausführen
   useEffect(() => {
     if (!debouncedTerm) { setApiResults([]); return; }
     const searchAPI = async () => {
       setIsSearching(true);
       try {
-        // API-Aufruf an Openlibrary, um Bücher zu suchen
         const response = await fetch(`/api/openlibrary_search?q=${encodeURIComponent(debouncedTerm)}`);
         if (response.ok) {
           const data = await response.json();
@@ -302,6 +378,8 @@ export default function Discover() {
 
   return (
     <div className="flex flex-col gap-10 w-full animate-in fade-in duration-500">
+      
+      {/* Suchbereich */}
       <div className="flex flex-col items-center gap-6 w-full max-w-2xl mx-auto mt-4">
         <h1 className="text-3xl font-bold flex items-center gap-3 text-white">
           <Compass className="text-yellow-400 w-8 h-8" /> Discover
@@ -331,6 +409,7 @@ export default function Discover() {
         </div>
       </div>
 
+      {/* REAKTIVE RENDER-WEICHE: Suchergebnisse ODER Empfehlungen */}
       {searchTerm !== "" ? (
         <div>
           <h2 className="text-xl font-bold text-white mb-6">Search Results</h2>
@@ -344,31 +423,33 @@ export default function Discover() {
       ) : (
         <div className="flex flex-col gap-12">
           <section>
-            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+            <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
               <span className="bg-yellow-400 w-2 h-6 rounded-full"></span>
               Recommended for You
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              {mockBooks.filter(b => b.recommended).map(book => renderBookCard(book))}
-            </div>
-          </section>
-          <section>
-            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-              <span className="bg-zinc-700 w-2 h-6 rounded-full"></span>
-              Trending Now
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              {mockBooks.filter(b => b.trending).map(book => renderBookCard(book))}
-            </div>
-          </section>
-          <section>
-            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-              <span className="bg-zinc-700 w-2 h-6 rounded-full"></span>
-              New Arrivals
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              {mockBooks.filter(b => b.new).map(book => renderBookCard(book))}
-            </div>
+            
+            {favoriteAuthor && (
+              <p className="text-zinc-400 text-sm mb-6">
+                Basierend auf deinem Lesegeschmack. Beliebtester Autor in deinem Regal: <span className="text-yellow-400 font-medium">{favoriteAuthor}</span>
+              </p>
+            )}
+
+            {isLoadingRecommendations ? (
+              <div className="flex items-center gap-3 text-zinc-500 py-12 justify-center w-full">
+                <Loader2 className="w-6 h-6 animate-spin text-yellow-400" />
+                <span>Analysiere deine Lesepräferenzen...</span>
+              </div>
+            ) : recommendedBooks.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                {recommendedBooks.map(book => renderBookCard(book))}
+              </div>
+            ) : (
+              <p className="text-zinc-500 py-8 text-sm text-center border border-dashed border-zinc-800 rounded-2xl bg-zinc-900/10 w-full">
+                {favoriteAuthor 
+                  ? `Du besitzt bereits alle auf OpenLibrary gelisteten Bücher von ${favoriteAuthor}!`
+                  : "Füge zuerst ein paar Bücher zu deinem Shelf hinzu, damit wir deinen Lieblingsautor auswerten können!"}
+              </p>
+            )}
           </section>
         </div>
       )}
