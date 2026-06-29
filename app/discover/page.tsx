@@ -225,13 +225,13 @@ export default function Discover() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isScanOpen, setIsScanOpen] = useState(false);
 
-  // ── RECO-ENGINE: FILTERT BEREITS GESPEICHERTE BÜCHER AUS ──
+
   useEffect(() => {
     async function calculateRecommendations() {
       try {
         setIsLoadingRecommendations(true);
 
-        // 1. Hole alle Bücher aus dem eigenen Shelf des Nutzers
+        // Hole alle Bücher aus dem Shelf des Nutzers
         const res = await fetch("/api/books", { credentials: "include" });
         if (!res.ok) throw new Error("Konnte User-Shelf nicht laden.");
         
@@ -243,12 +243,12 @@ export default function Discover() {
           return;
         }
 
-        // NEU: Erstelle ein Set aller bereits gespeicherten ISBNs für einen O(1) Abgleich
+        // Hole die ISBNs der Bücher, die der Nutzer bereits besitzt
         const ownedIsbns = new Set<string>(
           itemsArray.map((item: any) => item.isbn).filter(Boolean)
         );
 
-        // 2. Parallel die Live-Autorendaten von OpenLibrary für die ISBNs auflösen
+        // Hole die Autoren der Bücher, die der Nutzer besitzt
         const authorPromises = itemsArray.map(async (item: any) => {
           if (!item.isbn) return null;
           try {
@@ -263,7 +263,7 @@ export default function Discover() {
 
         const resolvedAuthors = await Promise.all(authorPromises);
 
-        // 3. Frequenz-Analyse (Häufigkeitsverteilung des Lieblingsautors)
+        // Lieblingsautor ermitteln: Zähle die Häufigkeit jedes Autors und finde den Top-Autor
         const frequencyMap: Record<string, number> = {};
         let maxCount = 0;
         let topAuthor: string | null = null;
@@ -284,18 +284,18 @@ export default function Discover() {
 
         setFavoriteAuthor(topAuthor);
 
-        // 4. Top-Bücher dieses Autors abrufen
+        // Top-Bücher dieses Autors abrufen
         const olAuthorRes = await fetch(`/api/openlibrary_search?q=${encodeURIComponent(topAuthor)}`);
         if (olAuthorRes.ok) {
           const authorWorks = await olAuthorRes.json();
           
-          // NEU: Filtere alle Bücher heraus, deren ISBN bereits im ownedIsbns-Set existiert!
+          // Filtere alle Bücher heraus, die gespeichert sind!
           const filteredWorks = authorWorks.filter((b: any) => {
-            if (!b.isbn) return true; // Ohne ISBN behalten wir es testweise bei
-            return !ownedIsbns.has(b.isbn); // NUR behalten, wenn NICHT im Shelf vorhanden
+            if (!b.isbn) return true;
+            return !ownedIsbns.has(b.isbn);
           });
 
-          // Mappe maximal 5 noch nicht im Regal liegende Bücher
+          // Zeige 5 noch nicht gespeicherte Bücher
           const structuresRecs = filteredWorks
             .slice(0, 5)
             .map((b: any, i: number) => ({
@@ -307,7 +307,7 @@ export default function Discover() {
               genre: b.genres || "Fiction",
               coverUrl: b.coverKey ? `https://covers.openlibrary.org/b/olid/${b.coverKey}-L.jpg` : null,
               cover: "bg-zinc-800",
-              description: `Empfohlen, weil du gerne Bücher von ${topAuthor} liest und dieses Werk noch fehlt.`,
+              description: `Recommended because you enjoy reading books by ${topAuthor} and you don't have this one yet.`,
             }));
 
           setRecommendedBooks(structuresRecs);
@@ -409,7 +409,6 @@ export default function Discover() {
         </div>
       </div>
 
-      {/* REAKTIVE RENDER-WEICHE: Suchergebnisse ODER Empfehlungen */}
       {searchTerm !== "" ? (
         <div>
           <h2 className="text-xl font-bold text-white mb-6">Search Results</h2>
@@ -430,14 +429,14 @@ export default function Discover() {
             
             {favoriteAuthor && (
               <p className="text-zinc-400 text-sm mb-6">
-                Basierend auf deinem Lesegeschmack. Beliebtester Autor in deinem Regal: <span className="text-yellow-400 font-medium">{favoriteAuthor}</span>
+               Based on your reading preferences. Most popular author on your bookshelf: <span className="text-yellow-400 font-medium">{favoriteAuthor}</span>
               </p>
             )}
 
             {isLoadingRecommendations ? (
               <div className="flex items-center gap-3 text-zinc-500 py-12 justify-center w-full">
                 <Loader2 className="w-6 h-6 animate-spin text-yellow-400" />
-                <span>Analysiere deine Lesepräferenzen...</span>
+                <span>Analyze your reading preferences...</span>
               </div>
             ) : recommendedBooks.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
@@ -446,8 +445,8 @@ export default function Discover() {
             ) : (
               <p className="text-zinc-500 py-8 text-sm text-center border border-dashed border-zinc-800 rounded-2xl bg-zinc-900/10 w-full">
                 {favoriteAuthor 
-                  ? `Du besitzt bereits alle auf OpenLibrary gelisteten Bücher von ${favoriteAuthor}!`
-                  : "Füge zuerst ein paar Bücher zu deinem Shelf hinzu, damit wir deinen Lieblingsautor auswerten können!"}
+                  ? `You already own all books listed on OpenLibrary by ${favoriteAuthor}!`
+                  : "Add a few books to your shelf first so we can analyze your favorite author!"}
               </p>
             )}
           </section>
