@@ -14,7 +14,7 @@ datasource db {
 
 model Book {
   id    Int     @id @default(autoincrement())
-  isbn  Int     @unique
+  isbn  String     @unique
   title String?
 
   bookUsers BookUser[]

@@ -6,6 +6,7 @@ import { mockReviews } from "../lib/data";
 
 interface Book {
   id: string; 
+  isbn: string;
   title: string; 
   author: string; 
   year: number | string; 
@@ -39,6 +40,36 @@ export default function BookModal({ book, isOpen, onClose }: BookModalProps) {
 
   if (!isOpen || !book) return null;
 
+  const handleAddToShelf = async () => {
+    if (!book.isbn) {
+      alert("Dieses Buch besitzt leider keine gültige ISBN.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/books", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ isbn: book.isbn, title: book.title }),
+        credentials: "include", // Schickt das verschlüsselte JWT HTTP-Only Cookie sicher mit
+      });
+
+      // if (!res.ok) {
+      //   if (res.status === 401) throw new Error("Nicht autorisiert. Bitte logge dich neu ein.");
+      //   throw new Error("Fehler beim Speichern in der Datenbank.");
+      // }
+
+      alert(`"${book.title}" wurde deinem Shelf hinzugefügt!`);
+      onClose(); // Schließt das Modal automatisch nach Erfolg
+    } catch (error: any) {
+      console.error("DB-Fehler:", error);
+      alert(error.message || "Etwas ist schiefgelaufen.");
+    } finally {
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
       <div className="bg-[#121214] border border-zinc-800 rounded-3xl p-6 md:p-10 w-full max-w-3xl max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
@@ -71,7 +102,8 @@ export default function BookModal({ book, isOpen, onClose }: BookModalProps) {
             
             <p className="text-zinc-300 leading-relaxed mt-2">{book.description}</p>
 
-            <button className="flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white font-medium px-5 py-3 rounded-xl transition-colors mt-4 w-fit border border-zinc-700 hover:border-zinc-500">
+            <button onClick={handleAddToShelf}
+             className="flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white font-medium px-5 py-3 rounded-xl transition-colors mt-4 w-fit border border-zinc-700 hover:border-zinc-500">
               <Plus className="w-5 h-5" />
               Add to My Shelf
             </button>

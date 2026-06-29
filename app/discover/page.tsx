@@ -261,6 +261,7 @@ export default function Discover() {
           setApiResults(data.map((b: any, i: number) => ({
             id: `api-${i}`,
             title: b.title,
+            isbn: b.isbn,
             author: b.author,
             year: b.publishDate,
             genre: b.genres,

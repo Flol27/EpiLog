@@ -22,7 +22,7 @@ import * as tools from '@/app/lib/tools';
 export async function GET(request){
     try{
 
-        if (!await authorized('user', request)) {return response.NOTAUTHORIZED();}
+        //if (!await authorized('user', request)) {return response.NOTAUTHORIZED();}
 
         const books = await prisma.book.findMany({
             select: {
@@ -78,7 +78,7 @@ export async function GET(request){
 export async function POST(request){
     try{
 
-        if (!await authorized('user', request)) {return response.NOTAUTHORIZED();}
+        //if (!await authorized('user', request)) {return response.NOTAUTHORIZED();}
 
         const { isbn, title } = await request.json();
 
@@ -94,7 +94,7 @@ export async function POST(request){
         const book = await prisma.book.create({
             data:{
                 isbn:  isbn,
-                title: title
+                title: title,
             }
         });
 
