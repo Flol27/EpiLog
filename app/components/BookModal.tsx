@@ -206,14 +206,12 @@ export default function BookModal({
         credentials: "include",
       });
       if (!res.ok) throw new Error("Fehler beim Hinzufügen.");
-      alert(`"${book.title}" wurde deinem Shelf hinzugefügt!`);
       onClose();
     } catch (e: any) { alert(e.message); } finally { setIsSubmitting(false); }
   };
 
   // Remove from shelf
   const handleRemoveFromShelf = async () => {
-    if (!confirm(`"${book.title}" wirklich löschen?`)) return;
     try {
       setIsSubmitting(true);
       const res = await fetch(`/api/books?id=${book.id}`, { method: "DELETE", credentials: "include" });
@@ -226,7 +224,7 @@ export default function BookModal({
   // Save pages
   const savePages = async (newPages: number, newTotal?: number) => {
     const total = newTotal !== undefined ? newTotal : (book.totalPages || 0);
-    if (total > 0 && newPages > total) { alert(`Nur ${total} Seiten verfügbar.`); return; }
+    if (total > 0 && newPages > total) { return; }
     const safePages = Math.max(0, newPages);
     try {
       setIsSavingPages(true);
@@ -239,12 +237,12 @@ export default function BookModal({
       onPageUpdate?.(book.id, safePages, newTotal);
       setPageInput(safePages.toString());
       if (newTotal !== undefined) setTotalInput(newTotal.toString());
-    } catch { alert("Speichern fehlgeschlagen."); } finally { setIsSavingPages(false); }
+    } catch { } finally { setIsSavingPages(false); }
   };
 
   // Submit review
   const handleReviewSubmit = async () => {
-    if (reviewRating === 0) { alert("Bitte wähle eine Bewertung."); return; }
+    if (reviewRating === 0) { return; }
     setReviewSubmitting(true);
     try {
       const res = await fetch("/api/reviews", {
