@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/Navbar";
+import { headers } from 'next/headers';
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="de" className="dark">
+    <html lang="en" className="dark">
       {/* Sauberer Standard-Tailwind-Hintergrund */}
       <body 
         className={`${inter.className} antialiased overflow-y-scroll`}

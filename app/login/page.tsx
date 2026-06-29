@@ -22,6 +22,7 @@ export default function Login() {
     });
 
     if (res.ok) {
+      localStorage.setItem('isLoggedIn', 'true');
       router.push('/dashboard');
     } else {
       const data = await res.json();

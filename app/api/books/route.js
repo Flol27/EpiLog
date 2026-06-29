@@ -22,7 +22,7 @@ import * as tools from '@/app/lib/tools';
 export async function GET(request){
     try{
 
-        //if (!await authorized('user', request)) {return response.NOTAUTHORIZED();}
+        if (!await authorized('user', request)) {return response.NOTAUTHORIZED();}
 
         const books = await prisma.book.findMany({
             select: {
