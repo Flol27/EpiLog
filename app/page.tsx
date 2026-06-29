@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { BookOpen, Users, ArrowRight, ArrowUpRight, ScanLine, BarChart3 } from "lucide-react";
+import { BookOpen, Users, ArrowRight, ArrowUpRight, ScanLine, BarChart3, LucideIcon } from "lucide-react";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -47,13 +47,19 @@ function Nav() {
   );
 }
 
+interface Floater {
+  src: string;
+  className: string;
+  delay: number;
+}
+
 function Hero() {
-  const ref = useRef(null);
+  const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], [0, -120]);
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
-  const floaters = [
+  const floaters: Floater[] = [
     { src: "https://covers.openlibrary.org/b/isbn/9781449493899-L.jpg", className: "top-[20%] left-[8%] w-44 rotate-[-8deg]", delay: 0.2 },
     { src: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=600&auto=format&fit=crop", className: "top-[12%] left-[18%] w-40 rotate-[6deg]", delay: 0.35 },
     { src: "https://covers.openlibrary.org/b/isbn/9780857197689-L.jpg", className: "bottom-[14%] left-[14%] w-40 rotate-[5deg]", delay: 0.5 },
@@ -88,8 +94,17 @@ function Hero() {
   );
 }
 
+interface Card {
+  num: string;
+  label: string;
+  title: string;
+  text: string;
+  glow: string;
+  icon: LucideIcon;
+}
+
 function FourMoves() {
-  const cards = [
+  const cards: Card[] = [
     { num: "01", label: "SCAN", title: "Scan ISBN instead of typing", text: "Hold your book up to the camera. EpiLog pulls the cover, author, and blurb directly from the barcode via our API.", glow: "from-purple-900/40", icon: ScanLine },
     { num: "02", label: "READ", title: "Every page counts", text: "Track your progress – with reading streaks, personal goals, and a timeline showing how you read.", glow: "from-amber-900/40", icon: BookOpen },
     { num: "03", label: "SHARE", title: "Your shelf, your crew", text: "Follow friends, write reviews, and discover books together that you would have never found otherwise.", glow: "from-emerald-900/40", icon: Users },
@@ -123,8 +138,15 @@ function FourMoves() {
   );
 }
 
+interface Step {
+  num: string;
+  label: string;
+  title: string;
+  text: string;
+}
+
 function ReadingFlow() {
-  const steps = [
+  const steps: Step[] = [
     { num: "01", label: "THE INSTANT", title: "A cover that catches your eye.", text: "You walk through a bookstore. A spine draws you in. Scan. It's on your shelf. For now as a reminder. Later as a digital bookmark." },
     { num: "02", label: "DEVOTION", title: "Page by page, without pressure.", text: "EpiLog doesn't remind you – it just shows you how far you've come. Reading remains your thing." },
     { num: "03", label: "RESONANCE", title: "Books that echo.", text: "Share your thoughts and feelings about books with other readers, or get inspired by other reviews." },
@@ -159,8 +181,13 @@ function ReadingFlow() {
   );
 }
 
+interface Quote {
+  text: string;
+  author: string;
+}
+
 function Voices() {
-  const quotes = [
+  const quotes: Quote[] = [
     { text: "A book must be the axe for the frozen sea inside us.", author: "Franz Kafka" },
     { text: "Reading is dreaming with open eyes.", author: "Anissa Trisdianty" },
     { text: "He who reads lives twice.", author: "Umberto Eco" },
@@ -203,8 +230,18 @@ function FinalCta() {
   );
 }
 
+interface NavLink {
+  name: string;
+  href: string;
+}
+
+interface NavColumn {
+  title: string;
+  links: NavLink[];
+}
+
 function Footer() {
-  const columns = [
+  const columns: NavColumn[] = [
     { title: "Product", links: [{ name: "Features", href: "#features" }, { name: "Reading Flow", href: "#flow" }, { name: "Community", href: "#voices" }] },
     { title: "Account", links: [{ name: "Log In", href: "/login" }, { name: "Register", href: "/register" }] },
     { title: "About Us", links: [{ name: "DHBW Stuttgart", href: "https://www.dhbw-stuttgart.de" }, { name: "GitHub", href: "https://github.com/flol27/EpiLog" }] },
@@ -250,7 +287,12 @@ function Footer() {
   );
 }
 
-function Reveal({ children, delay = 0 }) {
+interface RevealProps {
+  children: React.ReactNode;
+  delay?: number;
+}
+
+function Reveal({ children, delay = 0 }: RevealProps) {
   return (
     <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}>
       {children}

@@ -6,7 +6,21 @@ import Link from "next/link";
 import { BookOpen, Eye, EyeOff, ArrowRight, Loader2, Check, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const PASSWORD_RULES = [
+interface FormState {
+  firstname: string;
+  lastname: string;
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+interface PasswordRule {
+  label: string;
+  test: (pw: string) => boolean;
+}
+
+const PASSWORD_RULES: PasswordRule[] = [
   { label: "Mindestens 8 Zeichen", test: (pw) => pw.length >= 8 },
   { label: "Mindestens eine Zahl", test: (pw) => /\d/.test(pw) },
   { label: "Mindestens ein Buchstabe", test: (pw) => /[a-zA-Z]/.test(pw) },
@@ -15,7 +29,7 @@ const PASSWORD_RULES = [
 export default function RegisterPage() {
   const router = useRouter();
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormState>({
     firstname: "",
     lastname: "",
     username: "",
@@ -23,20 +37,21 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [passwordFocused, setPasswordFocused] = useState(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirm, setShowConfirm] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [passwordFocused, setPasswordFocused] = useState<boolean>(false);
 
-  function update(field) {
-    return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
+  function update(field: keyof FormState) {
+    return (e: React.ChangeEvent<HTMLInputElement>) =>
+      setForm((prev) => ({ ...prev, [field]: e.target.value }));
   }
 
   const allRulesPass = PASSWORD_RULES.every((r) => r.test(form.password));
   const passwordsMatch = form.password === form.confirmPassword && form.confirmPassword !== "";
 
-  async function handleSubmit(e) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
 
@@ -52,13 +67,12 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      // POST /api/users – existing register endpoint
       const res = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           firstname: form.firstname,
-          lastname:  form.lastname  || undefined,
+          lastname:  form.lastname || undefined,
           username:  form.username,
           email:     form.email,
           password:  form.password,
@@ -83,7 +97,6 @@ export default function RegisterPage() {
         router.push("/dashboard");
         router.refresh();
       } else {
-        // Registration worked but auto-login failed – send to login page
         router.push("/login");
       }
     } catch {
