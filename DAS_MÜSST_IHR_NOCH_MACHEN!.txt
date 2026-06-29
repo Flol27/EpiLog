@@ -12,6 +12,11 @@ copy example.env .env #Für Windows
 npx prisma generate
 npx prisma migrate dev --name init
 
+# Test-User erstellen
+npm install
+npx prisma db seed
+npx prisma migrate reset
+
 # Run
 npm run dev
 
