@@ -3,14 +3,30 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BookOpen, User, Lock } from "lucide-react";
+import { useState } from "react";
 
 export default function Login() {
   const router = useRouter();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  const handleFakeLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem("isLoggedIn", "true");
-    router.push("/dashboard"); 
+    setError('');
+
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (res.ok) {
+      router.push('/dashboard');
+    } else {
+      const data = await res.json();
+      setError(data.error);
+    }
   };
 
   return (
@@ -51,16 +67,18 @@ export default function Login() {
           <hr className="flex-1 border-zinc-800" />
         </div>
 
-        <form onSubmit={handleFakeLogin} className="flex flex-col gap-4">
+        <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-zinc-300">Username or Email</label>
             <div className="relative">
               <User className="absolute left-3 top-3 w-5 h-5 text-zinc-500" />
-              <input 
-                type="text" 
-                placeholder="alex.thompson"
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-3 pl-11 pr-4 text-white focus:outline-none focus:border-yellow-400 transition-colors"
-                required
+              <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="username"
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-3 pl-11 pr-4 text-white focus:outline-none focus:border-yellow-400 transition-colors"
+              required
               />
             </div>
           </div>
@@ -69,11 +87,13 @@ export default function Login() {
             <label className="text-sm font-medium text-zinc-300">Password</label>
             <div className="relative">
               <Lock className="absolute left-3 top-3 w-5 h-5 text-zinc-500" />
-              <input 
-                type="password" 
-                placeholder="••••••••"
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-3 pl-11 pr-4 text-white focus:outline-none focus:border-yellow-400 transition-colors"
-                required
+              <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-3 pl-11 pr-4 text-white focus:outline-none focus:border-yellow-400 transition-colors"
+              required
               />
             </div>
           </div>
@@ -84,6 +104,11 @@ export default function Login() {
           >
             Log In
           </button>
+
+          {error && (
+            <p className="text-red-400 text-sm text-center">{error}</p>
+          )}
+
         </form>
 
         <p className="text-center text-zinc-400 text-sm">
