@@ -1,13 +1,18 @@
 git clone https://github.com/Flol27/EpiLog.git
 cd epilog
 
+# Dependencies installieren
 npm install
 
-## Eure Environment-Variablen definieren (durch .env File) und Datenbank erstellen.
-cp example.env .env
+## Eure Environment-Variablen definieren, durch erstellen von .env File und Inhalt von example.env rein kopieren.
+cp example.env .env   #Für Linux
+copy example.env .env #Für Windows
+
+# Datenbank erstellen
 npx prisma generate
 npx prisma migrate dev --name init
 
+# Run
 npm run dev
 
 ###################
