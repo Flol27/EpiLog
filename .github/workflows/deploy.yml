@@ -44,6 +44,7 @@ jobs:
         run: |
           # 1) Standalone-Server (enthält bereits node_modules)
           rsync -avz --delete \
+            --exclude='.env' \
             -e "ssh -p 2200 -i ~/.ssh/id_rsa" \
             ./.next/standalone/ \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.TARGET_DIR }}/
