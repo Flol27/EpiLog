@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { X, Star, User, Plus, Trash2, Loader2 } from "lucide-react";
 import { mockReviews } from "../lib/data";
 
+// Interface für die Buchdaten, die im Modal angezeigt werden
 interface Book {
   id: string; 
   isbn: string;
@@ -20,8 +21,8 @@ interface BookModalProps {
   book: Book | null;
   isOpen: boolean;
   onClose: () => void;
-  isOwnShelf?: boolean; // NEU: Steuert, ob wir im eigenen Regal (Löschen) oder beim Suchen (Hinzufügen) sind
-  onBookRemoved?: (bookId: string) => void; // NEU: Aktualisiert das UI im Shelf sofort ohne Page-Reload
+  isOwnShelf?: boolean;
+  onBookRemoved?: (bookId: string) => void;
 }
 
 export default function BookModal({ 
@@ -32,8 +33,9 @@ export default function BookModal({
   onBookRemoved 
 }: BookModalProps) {
   
-  const [isSubmitting, setIsSubmitting] = useState(false); // Lade-Indikator gegen Doppelklicks
+  const [isSubmitting, setIsSubmitting] = useState(false); // Lade-Indikator
 
+  // Verhindert das Scrollen des Hintergrunds, wenn das Modal geöffnet ist
   useEffect(() => {
     if (isOpen) {
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
@@ -51,6 +53,7 @@ export default function BookModal({
 
   if (!isOpen || !book) return null;
 
+  // Buch zu Shelf hinzufügen
   const handleAddToShelf = async () => {
     if (!book.isbn) {
       alert("Dieses Buch besitzt leider keine gültige ISBN.");
@@ -59,6 +62,7 @@ export default function BookModal({
 
     try {
       setIsSubmitting(true);
+      // Buch in der Datenbank speichern
       const res = await fetch("/api/books", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -86,8 +90,8 @@ export default function BookModal({
     try {
       setIsSubmitting(true);
       
-      // Nutzt die relationale ID des Buch-Eintrags aus deiner SQLite-Datenbank
-      const res = await fetch(`/api/books?id=${book.id}`, {
+        // Buch löschen
+        const res = await fetch(`/api/books?id=${book.id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -97,12 +101,12 @@ export default function BookModal({
         throw new Error("Fehler beim Löschen aus der Datenbank.");
       }
 
-      // Wenn die übergeordnete Shelf-Komponente eine Update-Funktion mitgegeben hat, rufen wir sie auf
+      
       if (onBookRemoved) {
         onBookRemoved(book.id);
       }
 
-      onClose(); // Schließt das Modal nach erfolgreichem Löschen
+      onClose();
     } catch (error: any) {
       console.error("Lösch-Fehler:", error);
       alert(error.message || "Das Buch konnte nicht gelöscht werden.");

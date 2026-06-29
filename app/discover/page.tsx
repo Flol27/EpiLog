@@ -19,6 +19,7 @@ interface ScannedBook {
 
 async function fetchBookByISBN(isbn: string): Promise<ScannedBook | null> {
   try {
+    // Buch aus der OpenLibrary-API abrufen
     const res = await fetch(`/api/openlibrary_search?q=${encodeURIComponent(isbn)}`);
     if (!res.ok) return null;
     const data = await res.json();
@@ -245,6 +246,7 @@ export default function Discover() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isScanOpen, setIsScanOpen] = useState(false);
 
+  // Suche erst starten, wenn der Benutzer 500ms lang nichts eingegeben hat
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedTerm(searchTerm), 500);
     return () => clearTimeout(timer);
@@ -255,6 +257,7 @@ export default function Discover() {
     const searchAPI = async () => {
       setIsSearching(true);
       try {
+        // API-Aufruf an Openlibrary, um Bücher zu suchen
         const response = await fetch(`/api/openlibrary_search?q=${encodeURIComponent(debouncedTerm)}`);
         if (response.ok) {
           const data = await response.json();

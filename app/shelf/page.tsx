@@ -28,14 +28,13 @@ export default function Shelf() {
         setIsLoading(true);
         setError(null);
 
-        // 1. ISBNs aus deiner eigenen SQLite-Datenbank abrufen
+        // ISBNs aus Datenbank abrufen
         const res = await fetch("/api/books", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
           credentials: "include" 
         });
 
-        // Error-Handling sauber aktiviert für den JWT-Schutz
         if (!res.ok) {
           if (res.status === 401) throw new Error("Nicht autorisiert. Bitte logge dich neu ein.");
           throw new Error("Fehler beim Laden der DB-Einträge.");
@@ -50,7 +49,7 @@ export default function Shelf() {
           return;
         }
 
-        // 2. Für JEDE ISBN parallel die OpenLibrary-Details über deine API abfragen
+        // Für jede ISBN parallel die Details über Openlibrary abfragen
         const fullBooksPromises = itemsArray.map(async (dbItem: any) => {
           const isbn = dbItem.isbn; 
           if (!isbn) return null;
@@ -64,7 +63,7 @@ export default function Shelf() {
             if (olData && olData.length > 0) {
               const olBook = olData[0];
               return {
-                id: dbItem.id, // Das ist die Primärschlüssel-ID aus deiner SQLite (wichtig fürs Löschen!)
+                id: dbItem.id,
                 isbn: isbn,
                 title: olBook.title || "Unknown Title",
                 author: olBook.author || "Unknown Author",
@@ -82,6 +81,7 @@ export default function Shelf() {
           }
         });
 
+        // Warten, bis alle Buchdetails geladen sind
         const resolvedBooks = await Promise.all(fullBooksPromises);
         setBooks(resolvedBooks.filter(b => b !== null));
 
@@ -96,12 +96,11 @@ export default function Shelf() {
     loadShelfData();
   }, []);
 
-  // NEU: Diese reaktive Funktion wird vom Modal aufgerufen, wenn das Löschen erfolgreich war
   const handleBookRemovedFromState = (removedId: string) => {
     setBooks((prevBooks) => prevBooks.filter((book) => book.id !== removedId));
   };
 
-  // Dynamische Genre-Zählung
+  // Genres Zählen für Filter Buttons
   const genreCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     books.forEach((book) => {
@@ -204,13 +203,12 @@ export default function Shelf() {
         </>
       )}
 
-      {/* MODAL ÜBERGABE: Jetzt vollständig reaktiv parametrisiert */}
       <BookModal 
         book={selectedBook} 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        isOwnShelf={true} // Schaltet die Modal-Buttons auf Lösch-Modus
-        onBookRemoved={handleBookRemovedFromState} // Aktualisiert das Grid nach dem Löschen atomar
+        isOwnShelf={true}
+        onBookRemoved={handleBookRemovedFromState}
       />
     </div>
   );
