@@ -5,27 +5,33 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { BookOpen, Home, Library, Compass, Users, LogOut } from "lucide-react";
 
+interface Me {
+  userId: number;
+  username: string;
+  email: string;
+  role: string;
+}
+
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [me, setMe] = useState<Me | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     fetch("/api/me")
-      .then((res) => setIsLoggedIn(res.ok))
-      .catch(() => setIsLoggedIn(false));
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => setMe(data?.user ?? null))
+      .catch(() => setMe(null));
   }, [pathname]);
 
-  useEffect(() => {}, [pathname]);
-
   if (!mounted) return null;
-  if (!isLoggedIn) return null;
+  if (!me) return null;
 
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" }).catch(() => {});
-    setIsLoggedIn(false);
+    setMe(null);
     router.push("/");
   };
 
@@ -45,7 +51,7 @@ export default function Navbar() {
         <span className="font-bold text-2xl tracking-tight text-white hidden sm:block">EpiLog</span>
       </Link>
 
-      {/* Nav Links – icons always visible, text only on md+ */}
+      {/* Nav Links */}
       <div className="flex items-center gap-1 text-zinc-400 font-medium">
         {navLinks.map((link) => {
           const Icon = link.icon;
@@ -72,12 +78,12 @@ export default function Navbar() {
         <Link href="/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="w-9 h-9 rounded-full bg-zinc-700 overflow-hidden shrink-0">
             <img
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex"
-              alt="Profile"
+              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${me.username}`}
+              alt={me.username}
               className="w-full h-full object-cover bg-zinc-800"
             />
           </div>
-          <span className="hidden lg:block text-sm text-white font-medium">Alex Thompson</span>
+          <span className="hidden lg:block text-sm text-white font-medium">{me.username}</span>
         </Link>
         <button
           onClick={handleLogout}

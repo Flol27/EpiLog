@@ -349,7 +349,7 @@ export default function BookModal({
                 className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 font-medium px-5 py-2.5 rounded-xl transition-colors"
               >
                 <Pencil className="w-4 h-4" />
-                {ownReview ? "Review bearbeiten" : "Review schreiben"}
+                {ownReview ? "Edit review" : "Write review"}
               </button>
             </div>
           </div>
