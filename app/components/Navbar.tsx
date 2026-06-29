@@ -13,26 +13,26 @@ export default function Navbar() {
 
   useEffect(() => {
     setMounted(true);
-    const loggedInState = localStorage.getItem("isLoggedIn");
-    if (loggedInState === "true") {
-      setIsLoggedIn(true);
-    }
-  }, [pathname]);
+    // Check session via cookie (set by /api/login), not localStorage
+    fetch("/api/me")
+      .then((res) => setIsLoggedIn(res.ok))
+      .catch(() => setIsLoggedIn(false));
+  }, [pathname]); // re-check on every route change
 
   if (!mounted) return null;
   if (!isLoggedIn) return null;
 
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
+  const handleLogout = async () => {
+    await fetch("/api/logout", { method: "POST" }).catch(() => {});
     setIsLoggedIn(false);
     router.push("/");
   };
 
   const navLinks = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
-    { name: "My Shelf", href: "/shelf", icon: Library },
-    { name: "Discover", href: "/discover", icon: Compass },
-    { name: "Friends", href: "/friends", icon: Users },
+    { name: "My Shelf",  href: "/shelf",     icon: Library },
+    { name: "Discover",  href: "/discover",  icon: Compass },
+    { name: "Friends",   href: "/friends",   icon: Users },
   ];
 
   return (
@@ -48,7 +48,6 @@ export default function Navbar() {
         {navLinks.map((link) => {
           const Icon = link.icon;
           const isActive = pathname === link.href;
-
           return (
             <Link
               key={link.name}
@@ -83,7 +82,11 @@ export default function Navbar() {
                   <p className="text-white font-medium">Alex Thompson</p>
                 </div>
               </Link>
-              <button onClick={handleLogout} className="text-zinc-400 hover:text-white ml-2" title="Logout">
+              <button
+                onClick={handleLogout}
+                className="text-zinc-400 hover:text-white ml-2"
+                title="Logout"
+              >
                 <LogOut className="w-5 h-5" />
               </button>
             </div>
