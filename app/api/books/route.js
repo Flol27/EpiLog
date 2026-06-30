@@ -23,32 +23,43 @@ export async function GET(request) {
         const userId = await authorized('user', request);
         if (!userId) { return response.NOTAUTHORIZED(); }
 
-        // Nur die Bücher des eingeloggten Users zurückgeben
+        // 1. Prisma holt die Daten inklusive totalPages
         const bookUsers = await prisma.bookUser.findMany({
             where: { userId: userId },
+            orderBy: {
+                updatedAt: 'desc' // Sortiert nach dem letzten Änderungsdatum
+            },
             include: {
                 book: {
                     select: {
-                        id:    true,
-                        isbn:  true,
+                        id: true,
+                        isbn: true,
                         title: true,
+                        totalPages: true, // WICHTIG: Das muss hier stehen!
                     }
                 }
             }
         });
 
-        const books = bookUsers.map(bu => ({
-            ...bu.book,
-            pagesRead:  bu.pagesRead,
-            startDate:  bu.startDate,
-            readDate:   bu.readDate,
-            rating:     bu.rating,
-            ratingText: bu.ratingText,
-        }));
+        // 2. Das Mapping fügt alles zusammen
+        const books = bookUsers.map(bu => {
+            console.log("DEBUG_BU_BOOK:", bu.book);
+            return {
+                ...bu.book,         // Hier werden id, isbn, title UND totalPages übernommen
+                pagesRead: bu.pagesRead,
+                startDate: bu.startDate,
+                readDate: bu.readDate,
+                rating: bu.rating,
+                ratingText: bu.ratingText,
+            };
+        });
 
         return NextResponse.json({ books }, { status: 200 });
 
     } catch (error) {
+        // Hier fügen wir ein detailliertes Log hinzu
+        console.error("API BOOKS ERROR DETAILED:", error); 
+        
         return NextResponse.json(
             { error: 'Fehler beim Abrufen der Bücher', message: error.message },
             { status: 500 }
@@ -100,14 +111,14 @@ export async function POST(request) {
 
         if (!tools.checkISBN(isbn)) return response.WRONGDATA("ISBN überprüfen", isbn);
 
-        // Buch anlegen falls es noch nicht existiert (upsert)
+        // 1. Buch anlegen oder finden
         const book = await prisma.book.upsert({
             where:  { isbn },
             update: { title },
             create: { isbn, title },
         });
 
-        // Prüfen ob der User das Buch bereits im Shelf hat
+        // 2. Prüfen ob der User das Buch bereits im Shelf hat
         const existing = await prisma.bookUser.findUnique({
             where: { userId_bookId: { userId, bookId: book.id } }
         });
@@ -119,17 +130,18 @@ export async function POST(request) {
             );
         }
 
-        // Verknüpfung User <-> Buch anlegen
+        // 3. WICHTIG: Verknüpfung User <-> Buch tatsächlich anlegen
         const bookUser = await prisma.bookUser.create({
             data: {
-                userId,
-                bookId: book.id,
+                userId: userId,
+                bookId: book.id
             }
         });
 
         return NextResponse.json({ book, bookUser }, { status: 201 });
 
     } catch (error) {
+        console.error("Fehler beim Hinzufügen:", error);
         return NextResponse.json(
             { error: 'Fehler beim Hinzufügen des Buches', message: error.message },
             { status: 500 }

@@ -41,6 +41,7 @@ export async function GET(request: Request) {
       let displayIsbn = 'Keine ISBN vorhanden';
       let genres = 'Keine Genres';
       
+      // Suche im "ia"-Array nach "isbn_"
       if (book.ia && book.ia.length > 0) {
         const isbnEntry = book.ia.find((id: string) => id.startsWith('isbn_'));
         if (isbnEntry) {
@@ -48,6 +49,7 @@ export async function GET(request: Request) {
         }
       } 
       
+      // Fallback auf das normale "isbn"-Array
       if (displayIsbn === 'Keine ISBN vorhanden' && book.isbn && book.isbn.length > 0) {
         displayIsbn = book.isbn[0];
       }
@@ -75,6 +77,9 @@ export async function GET(request: Request) {
         }
       }
 
+      // Seiten-Median oder feste Seitenzahl direkt aus dem OpenLibrary-Dokument holen
+      const pageCount = book.number_of_pages_median || book.number_of_pages || 0;
+
       books.push({
         title: book.title,
         author: book.author_name?.[0] || 'Unbekannter Autor',
@@ -82,8 +87,7 @@ export async function GET(request: Request) {
         publishDate: publishDate,
         coverKey: book.cover_edition_key || null,
         genres: genres,
-        // NEU: Seitenanzahl aus OpenLibrary als Fallback
-        number_of_pages: book.number_of_pages_median || book.number_of_pages || 0,
+        number_of_pages: pageCount
       });
     }
 

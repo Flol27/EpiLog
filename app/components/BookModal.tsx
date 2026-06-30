@@ -155,10 +155,6 @@ export default function BookModal({
       document.body.style.paddingRight = "0px";
       document.body.style.overflow = "unset";
     }
-    return () => {
-      document.body.style.paddingRight = "0px";
-      document.body.style.overflow = "unset";
-    };
   }, [isOpen]);
 
   // Load reviews
@@ -206,12 +202,14 @@ export default function BookModal({
         credentials: "include",
       });
       if (!res.ok) throw new Error("Fehler beim Hinzufügen.");
+      alert(`"${book.title}" wurde deinem Shelf hinzugefügt!`);
       onClose();
     } catch (e: any) { alert(e.message); } finally { setIsSubmitting(false); }
   };
 
   // Remove from shelf
   const handleRemoveFromShelf = async () => {
+    if (!confirm(`Wirklich löschen?`)) return;
     try {
       setIsSubmitting(true);
       const res = await fetch(`/api/books?id=${book.id}`, { method: "DELETE", credentials: "include" });
@@ -224,8 +222,12 @@ export default function BookModal({
   // Save pages
   const savePages = async (newPages: number, newTotal?: number) => {
     const total = newTotal !== undefined ? newTotal : (book.totalPages || 0);
-    if (total > 0 && newPages > total) { return; }
+    if (total > 0 && newPages > total) { 
+      alert(`Fehler: Nur ${total} Seiten.`); 
+      return; 
+    }
     const safePages = Math.max(0, newPages);
+
     try {
       setIsSavingPages(true);
       const res = await fetch("/api/books/pages", {
@@ -234,10 +236,15 @@ export default function BookModal({
         body: JSON.stringify({ bookId: book.id, pagesRead: safePages, totalPages: newTotal }),
       });
       if (!res.ok) throw new Error("Fehler beim Speichern.");
+      
       onPageUpdate?.(book.id, safePages, newTotal);
       setPageInput(safePages.toString());
       if (newTotal !== undefined) setTotalInput(newTotal.toString());
-    } catch { } finally { setIsSavingPages(false); }
+    } catch (e) { 
+      alert("Speichern fehlgeschlagen."); 
+    } finally { 
+      setIsSavingPages(false); 
+    }
   };
 
   // Submit review
@@ -272,14 +279,14 @@ export default function BookModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
       <div className="bg-[#121214] border border-zinc-800 rounded-3xl p-6 md:p-10 w-full max-w-3xl max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
-
-        <button onClick={onClose} className="absolute top-6 right-6 text-zinc-400 hover:text-white bg-zinc-900 p-2 rounded-full">
+        
+        <button onClick={onClose} className="absolute top-6 right-6 text-zinc-400 hover:text-white bg-zinc-900 transition-colors p-2 rounded-full">
           <X className="w-5 h-5" />
         </button>
 
         {/* Book Info */}
         <div className="flex flex-col md:flex-row gap-8 items-start mt-4">
-          <div className="w-40 md:w-48 aspect-[2/3] shrink-0 rounded-2xl shadow-xl border border-zinc-800 overflow-hidden bg-zinc-900">
+          <div className="w-40 md:w-56 aspect-[2/3] shrink-0 rounded-2xl shadow-xl border border-zinc-800 overflow-hidden bg-zinc-900">
             {book.coverUrl
               ? <img src={book.coverUrl} alt={book.title} className="w-full h-full object-cover" />
               : <div className="w-full h-full flex items-center justify-center text-zinc-500 text-sm">No Cover</div>
@@ -288,7 +295,7 @@ export default function BookModal({
 
           <div className="flex flex-col gap-3 w-full">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-1">{book.title}</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">{book.title}</h2>
               <p className="text-xl text-zinc-400">{book.author}</p>
             </div>
 
