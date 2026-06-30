@@ -29,7 +29,7 @@ async function fetchBookByISBN(isbn: string): Promise<ScannedBook | null> {
       title: book.title ?? "Unknown Title",
       authors: book.author ?? "Unknown Author",
       publisher: "Unknown Publisher",
-      pages: null,
+      pages: book.number_of_pages ?? null,
       year: book.publishDate ?? "Unknown",
       cover: book.coverKey
         ? `https://covers.openlibrary.org/b/olid/${book.coverKey}-L.jpg`
@@ -42,7 +42,8 @@ async function fetchBookByISBN(isbn: string): Promise<ScannedBook | null> {
 }
 
 // ── Scan Modal mit Scanbot SDK ──────────────────────
-function ScanModal({ onClose }: { onClose: () => void }) {
+// onBookScanned: liefert das gescannte Buch im gleichen Format wie renderBookCard zurück
+function ScanModal({ onClose, onBookScanned }: { onClose: () => void; onBookScanned: (book: any) => void }) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScannedBook | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -131,6 +132,23 @@ function ScanModal({ onClose }: { onClose: () => void }) {
     startScanner();
   };
 
+  // Gescanntes Buch ins gemeinsame BookModal-Format übersetzen und weitergeben
+  const handleAddScanned = () => {
+    if (!result) return;
+    onBookScanned({
+      id: `scan-${result.isbn}`,
+      isbn: result.isbn,
+      title: result.title,
+      author: result.authors,
+      year: result.year,
+      genre: "Fiction",
+      coverUrl: result.cover,
+      cover: "bg-zinc-800",
+      description: result.description,
+      totalPages: result.pages || 0,
+    });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
       <div className="bg-[#121214] border border-zinc-800 rounded-3xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
@@ -196,7 +214,10 @@ function ScanModal({ onClose }: { onClose: () => void }) {
             </div>
             <p className="text-zinc-400 text-sm leading-relaxed line-clamp-3">{result.description}</p>
             <div className="flex gap-3">
-              <button className="flex-1 bg-yellow-400 text-black font-bold py-2.5 rounded-xl hover:bg-yellow-500 transition-colors text-sm">
+              <button
+                onClick={handleAddScanned}
+                className="flex-1 bg-yellow-400 text-black font-bold py-2.5 rounded-xl hover:bg-yellow-500 transition-colors text-sm"
+              >
                 + Add to Shelf
               </button>
               <button onClick={reset} className="px-4 py-2.5 rounded-xl border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors text-sm">
@@ -216,7 +237,7 @@ export default function Discover() {
   const [debouncedTerm, setDebouncedTerm] = useState("");
   const [apiResults, setApiResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  
+
   const [recommendedBooks, setRecommendedBooks] = useState<any[]>([]);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(true);
   const [favoriteAuthor, setFavoriteAuthor] = useState<string | null>(null);
@@ -225,16 +246,17 @@ export default function Discover() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isScanOpen, setIsScanOpen] = useState(false);
 
-
   useEffect(() => {
     async function calculateRecommendations() {
       try {
         setIsLoadingRecommendations(true);
 
-        // Hole alle Bücher aus dem Shelf des Nutzers
         const res = await fetch("/api/books", { credentials: "include" });
-        if (!res.ok) throw new Error("Konnte User-Shelf nicht laden.");
-        
+        if (!res.ok) {
+          setIsLoadingRecommendations(false);
+          return;
+        }
+
         const dbItems = await res.json();
         const itemsArray = Array.isArray(dbItems) ? dbItems : dbItems.books || [];
 
@@ -243,12 +265,10 @@ export default function Discover() {
           return;
         }
 
-        // Hole die ISBNs der Bücher, die der Nutzer bereits besitzt
         const ownedIsbns = new Set<string>(
           itemsArray.map((item: any) => item.isbn).filter(Boolean)
         );
 
-        // Hole die Autoren der Bücher, die der Nutzer besitzt
         const authorPromises = itemsArray.map(async (item: any) => {
           if (!item.isbn) return null;
           try {
@@ -263,7 +283,6 @@ export default function Discover() {
 
         const resolvedAuthors = await Promise.all(authorPromises);
 
-        // Lieblingsautor ermitteln: Zähle die Häufigkeit jedes Autors und finde den Top-Autor
         const frequencyMap: Record<string, number> = {};
         let maxCount = 0;
         let topAuthor: string | null = null;
@@ -284,18 +303,15 @@ export default function Discover() {
 
         setFavoriteAuthor(topAuthor);
 
-        // Top-Bücher dieses Autors abrufen
         const olAuthorRes = await fetch(`/api/openlibrary_search?q=${encodeURIComponent(topAuthor)}`);
         if (olAuthorRes.ok) {
           const authorWorks = await olAuthorRes.json();
-          
-          // Filtere alle Bücher heraus, die gespeichert sind!
+
           const filteredWorks = authorWorks.filter((b: any) => {
             if (!b.isbn) return true;
             return !ownedIsbns.has(b.isbn);
           });
 
-          // Zeige 5 noch nicht gespeicherte Bücher
           const structuresRecs = filteredWorks
             .slice(0, 5)
             .map((b: any, i: number) => ({
@@ -322,13 +338,11 @@ export default function Discover() {
     calculateRecommendations();
   }, []);
 
-  // Debounce-Timer für die Freitextsuche (500ms)
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedTerm(searchTerm), 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Freitextsuche ausführen
   useEffect(() => {
     if (!debouncedTerm) { setApiResults([]); return; }
     const searchAPI = async () => {
@@ -360,6 +374,13 @@ export default function Discover() {
 
   const openModal = (book: any) => { setSelectedBook(book); setIsModalOpen(true); };
 
+  // Wird vom Scanner aufgerufen: Scanner schließen, gescanntes Buch im BookModal öffnen
+  const handleBookScanned = (book: any) => {
+    setIsScanOpen(false);
+    setSelectedBook(book);
+    setIsModalOpen(true);
+  };
+
   const renderBookCard = (book: any) => (
     <div key={book.id} onClick={() => openModal(book)} className="group flex flex-col gap-3 cursor-pointer">
       {book.coverUrl ? (
@@ -378,7 +399,7 @@ export default function Discover() {
 
   return (
     <div className="flex flex-col gap-10 w-full animate-in fade-in duration-500">
-      
+
       {/* Suchbereich */}
       <div className="flex flex-col items-center gap-6 w-full max-w-2xl mx-auto mt-4">
         <h1 className="text-3xl font-bold flex items-center gap-3 text-white">
@@ -426,7 +447,7 @@ export default function Discover() {
               <span className="bg-yellow-400 w-2 h-6 rounded-full"></span>
               Recommended for You
             </h2>
-            
+
             {favoriteAuthor && (
               <p className="text-zinc-400 text-sm mb-6">
                Based on your reading preferences. Most popular author on your bookshelf: <span className="text-yellow-400 font-medium">{favoriteAuthor}</span>
@@ -444,7 +465,7 @@ export default function Discover() {
               </div>
             ) : (
               <p className="text-zinc-500 py-8 text-sm text-center border border-dashed border-zinc-800 rounded-2xl bg-zinc-900/10 w-full">
-                {favoriteAuthor 
+                {favoriteAuthor
                   ? `You already own all books listed on OpenLibrary by ${favoriteAuthor}!`
                   : "Add a few books to your shelf first so we can analyze your favorite author!"}
               </p>
@@ -454,7 +475,7 @@ export default function Discover() {
       )}
 
       <BookModal book={selectedBook} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-      {isScanOpen && <ScanModal onClose={() => setIsScanOpen(false)} />}
+      {isScanOpen && <ScanModal onClose={() => setIsScanOpen(false)} onBookScanned={handleBookScanned} />}
     </div>
   );
 }
