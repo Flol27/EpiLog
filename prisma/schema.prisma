@@ -49,8 +49,6 @@ model BookUser {
   pagesRead  Int?
   startDate  DateTime?
   readDate   DateTime?
-  rating     Int?
-  ratingText String?
   updatedAt  DateTime  @default(now()) @updatedAt
     
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
