@@ -1,12 +1,23 @@
+//@/app/api/friends
 import { NextResponse } from 'next/server';
 import { prisma } from "@/lib/prisma";
 import { authorized } from '@/app/lib/auth';
 import * as response from '@/app/lib/response';
 
 /**
- * GET /api/friends
- * Returns all users with friendship status relative to the logged-in user.
- * Each user gets: isFriend, mutualCount
+ * @swagger
+ * /api/friends:
+ *   get:
+ *     summary: Alle Nutzer mit Freundschaftsstatus abrufen
+ *     tags:
+ *       - Friends
+ *     responses:
+ *       200:
+ *         description: Liste aller Nutzer mit isFriend und mutualCount
+ *       401:
+ *         description: Nicht autorisiert
+ *       500:
+ *         description: Serverfehler
  */
 export async function GET(request) {
     try {
@@ -44,7 +55,7 @@ export async function GET(request) {
             // All friend IDs of this user
             const theirFriendIds = new Set([
                 ...user.friendshipsFrom.map(f => f.toId),
-                ...user.friendshipsTo.map(f => f.fromId),
+                                           ...user.friendshipsTo.map(f => f.fromId),
             ]);
 
             // Mutual friends = intersection of current user's friends and their friends
@@ -60,7 +71,7 @@ export async function GET(request) {
                 quote:      user.quote,
                 status:     user.status,
                 isFriend:   friendIds.has(user.id),
-                mutualCount,
+                                 mutualCount,
             };
         });
 
@@ -72,8 +83,34 @@ export async function GET(request) {
 }
 
 /**
- * POST /api/friends
- * Add a user as friend. Body: { targetId }
+ * @swagger
+ * /api/friends:
+ *   post:
+ *     summary: Nutzer als Freund hinzufügen
+ *     tags:
+ *       - Friends
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - targetId
+ *             properties:
+ *               targetId:
+ *                 type: integer
+ *     responses:
+ *       201:
+ *         description: Freundschaft erfolgreich erstellt
+ *       400:
+ *         description: Ungültige Benutzer-ID
+ *       401:
+ *         description: Nicht autorisiert
+ *       409:
+ *         description: Bereits befreundet
+ *       500:
+ *         description: Serverfehler
  */
 export async function POST(request) {
     try {
@@ -111,8 +148,28 @@ export async function POST(request) {
 }
 
 /**
- * DELETE /api/friends?targetId=123
- * Remove a friend.
+ * @swagger
+ * /api/friends:
+ *   delete:
+ *     summary: Freundschaft entfernen
+ *     tags:
+ *       - Friends
+ *     parameters:
+ *       - in: query
+ *         name: targetId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID des zu entfernenden Freundes
+ *     responses:
+ *       200:
+ *         description: Freundschaft erfolgreich entfernt
+ *       400:
+ *         description: targetId fehlt
+ *       401:
+ *         description: Nicht autorisiert
+ *       500:
+ *         description: Serverfehler
  */
 export async function DELETE(request) {
     try {

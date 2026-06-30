@@ -1,3 +1,4 @@
+//@/app/api/users/me
 import { NextResponse } from 'next/server';
 import { prisma } from "@/lib/prisma";
 import { authorized } from '@/app/lib/auth';
@@ -7,12 +8,12 @@ import * as response from '@/app/lib/response';
  * @swagger
  * /api/users/me:
  *   get:
- *     summary: Alle Nutzer abrufen
+ *     summary: Eigene Nutzerdaten abrufen
  *     tags:
  *       - Users
  *     responses:
  *       200:
- *         description: Liste aller Nutzer
+ *         description: Eigene Nutzerdaten erfolgreich abgerufen
  *       401:
  *         description: Nicht autorisiert
  *       500:
