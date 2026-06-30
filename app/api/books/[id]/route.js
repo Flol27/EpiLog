@@ -1,163 +1,155 @@
+//@/app/api/books/[id]
 import { NextResponse } from 'next/server';
 import { prisma } from "@/lib/prisma";
 import { authorized } from '@/app/lib/auth';
 import * as response from '@/app/lib/response';
 import * as tools from '@/app/lib/tools';
 
-
 /**
  * @swagger
  * /api/books/{id}:
  *   get:
- *     summary: Buch abrufen
- *     tags: [Books]
+ *     summary: Alle Bücher im Shelf des eingeloggten Nutzers abrufen
+ *     tags:
+ *       - Books
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
+ *         description: Book-ID (wird in dieser Route aktuell nicht verwendet)
  *     responses:
  *       200:
- *         description: Buch
+ *         description: Liste der Bücher mit Lesefortschritt
  *       401:
  *         description: Nicht autorisiert
- *       404:
- *         description: Buch nicht gefunden
  *       500:
  *         description: Serverfehler
  */
-export async function GET(request, { params }){
-    try{
-
-        if (!await authorized('user', request)) {return response.NOTAUTHORIZED();}
-
-        const { id } = await params;
-        const b_id = parseInt(id, 10);
-
-        const book = await prisma.book.findUnique({
-            where: { id:b_id },
-            select: {
-                id:    true,
-                isbn:  true,
-                title: true
+export async function GET(request) {
+    try {
+        const userId = await authorized('user', request);
+        if (!userId) { return response.NOTAUTHORIZED(); }
+        const bookUsers = await prisma.bookUser.findMany({
+            where: { userId },
+            include: {
+                book: {
+                    select: {
+                        id:         true,
+                        isbn:       true,
+                        title:      true,
+                        totalPages: true,
+                    }
+                }
             }
         });
-
-        return NextResponse.json({book:book},{ status: 200 });
-
-    } catch(error){
-        return NextResponse.json(
-            {
-                error: 'Fehler beim Abrufen der Nutzerdaten',
-                message: error.message
-            },
-            { status: 500 }
-        );
+        const books = bookUsers.map(bu => ({
+            ...bu.book,
+            pagesRead:  bu.pagesRead,
+            startDate:  bu.startDate,
+            readDate:   bu.readDate,
+            rating:     bu.rating,
+            ratingText: bu.ratingText,
+            updatedAt:  bu.updatedAt,
+        }));
+        return NextResponse.json({ books }, { status: 200 });
+    } catch (error) {
+        return NextResponse.json({ error: 'Fehler beim Abrufen', message: error.message }, { status: 500 });
     }
 }
-
 
 /**
  * @swagger
  * /api/books/{id}:
- *   put:
- *     summary: Buch aktualisieren
- *     tags: [Books]
+ *   post:
+ *     summary: Buch zum Shelf des Nutzers hinzufügen
+ *     tags:
+ *       - Books
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
+ *         description: Book-ID (wird in dieser Route aktuell nicht verwendet)
  *     requestBody:
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - isbn
  *             properties:
  *               isbn:
  *                 type: string
  *               title:
  *                 type: string
  *     responses:
- *       200:
- *         description: Buch aktualisiert
+ *       201:
+ *         description: Buch erfolgreich hinzugefügt
  *       400:
- *         description: Keine gültigen Daten
+ *         description: ISBN fehlt oder ungültig
  *       401:
  *         description: Nicht autorisiert
- *       404:
- *         description: Buch nicht gefunden
+ *       409:
+ *         description: Buch bereits im Shelf
  *       500:
  *         description: Serverfehler
  */
-export async function PUT(request, { params }) {
+export async function POST(request) {
     try {
-
-        if (!await authorized('user', request)) {return response.NOTAUTHORIZED();}
-
-        const { id } = await params;
-        const bookId = parseInt(id, 10);
+        const userId = await authorized('user', request);
+        if (!userId) { return response.NOTAUTHORIZED(); }
         const { isbn, title } = await request.json();
-
-
-        // Dynamisches Update-Objekt aufbauen
-        const data = {};
-        if (tools.checkISBN(isbn))  { data.isbn  = isbn; }
-        if (tools.checkText(title)) { data.title = title; }
-
-        if(Object.keys(data).length === 0) return NextResponse.json({error: 'Keine Daten, oder nicht genug Rechte.'}, { status: 400 });
-
-
-        const book = await prisma.book.update({
-            where: { id: bookId },
-            data,
-            select: {
-                id:    true,
-                isbn:  true,
-                title: true
-            }
+        if (!isbn) return NextResponse.json({ error: 'ISBN ist erforderlich' }, { status: 400 });
+        if (!tools.checkISBN(isbn)) return response.WRONGDATA("ISBN überprüfen", isbn);
+        const book = await prisma.book.upsert({
+            where:  { isbn },
+            update: { title },
+            create: { isbn, title },
         });
-
-        return NextResponse.json(
-            {
-                description: 'Buch erfolgreich geändert',
-                book:book
-            },
-            { status: 201 }
-        );
-
-    } catch (error) {
-        if (error.code === 'P2025') {
-            return NextResponse.json({ error: 'Buch nicht gefunden.' }, { status: 404 });
+        const existing = await prisma.bookUser.findUnique({
+            where: { userId_bookId: { userId, bookId: book.id } }
+        });
+        if (existing) {
+            return NextResponse.json({ error: 'Dieses Buch ist bereits in deinem Shelf.' }, { status: 409 });
         }
-        return NextResponse.json(
-            {
-                error: 'Fehler beim Erstellen des Buches',
-                message: error.message
-            },
-            { status: 500 }
-        );
+        const bookUser = await prisma.bookUser.create({
+            data: { userId, bookId: book.id }
+        });
+        return NextResponse.json({ book, bookUser }, { status: 201 });
+    } catch (error) {
+        return NextResponse.json({ error: 'Fehler beim Hinzufügen', message: error.message }, { status: 500 });
     }
 }
-
 
 /**
  * @swagger
  * /api/books/{id}:
  *   delete:
- *     summary: Buch löschen
- *     tags: [Books]
+ *     summary: Buch aus dem Shelf des Nutzers entfernen
+ *     tags:
+ *       - Books
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
+ *         description: Book-ID (wird in dieser Route aktuell nicht verwendet, stattdessen Query-Parameter id)
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Book-ID des zu löschenden Eintrags
  *     responses:
  *       200:
- *         description: Buch gelöscht
+ *         description: Buch erfolgreich entfernt
+ *       400:
+ *         description: Book-ID fehlt
  *       401:
  *         description: Nicht autorisiert
  *       404:
@@ -165,35 +157,19 @@ export async function PUT(request, { params }) {
  *       500:
  *         description: Serverfehler
  */
-export async function DELETE(request, { params }){
-    try{
-
-        if (!await authorized('user', request)) {return response.NOTAUTHORIZED();}
-
-        const { id } = await params;
-        const b_id = parseInt(id, 10);
-
-        const book = await prisma.book.delete({
-            where: { id:b_id },
-            select: {
-                id:    true,
-                isbn:  true,
-                title: true
-            }
-        });
-
-        return NextResponse.json({ book:book}, { status: 200 });
-
-    } catch(error){
-        if (error.code === 'P2025') {
+export async function DELETE(request) {
+    try {
+        const userId = await authorized('user', request);
+        if (!userId) { return response.NOTAUTHORIZED(); }
+        const { searchParams } = new URL(request.url);
+        const bookId = parseInt(searchParams.get('id'));
+        if (!bookId) return NextResponse.json({ error: 'Book-ID fehlt' }, { status: 400 });
+        const deleted = await prisma.bookUser.deleteMany({ where: { userId, bookId } });
+        if (deleted.count === 0) {
             return NextResponse.json({ error: 'Buch nicht gefunden.' }, { status: 404 });
         }
-        return NextResponse.json(
-            {
-                error: 'Fehler beim Löschen des Buches',
-                message: error.message
-            },
-            { status: 500 }
-        );
+        return NextResponse.json({ message: 'Buch aus Shelf entfernt.' }, { status: 200 });
+    } catch (error) {
+        return NextResponse.json({ error: 'Fehler beim Löschen', message: error.message }, { status: 500 });
     }
 }

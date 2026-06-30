@@ -1,0 +1,1440 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "EpiLog API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/logout": {
+      "post": {
+        "summary": "Nutzer abmelden",
+        "tags": [
+          "Auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "Erfolgreich abgemeldet"
+          }
+        }
+      }
+    },
+    "/api/me": {
+      "get": {
+        "summary": "Eigene Nutzerdaten des eingeloggten Nutzers abrufen",
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Nutzerdaten erfolgreich abgerufen"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          }
+        }
+      }
+    },
+    "/api/books/{id}": {
+      "get": {
+        "summary": "Alle Bücher im Shelf des eingeloggten Nutzers abrufen",
+        "tags": [
+          "Books"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Book-ID (wird in dieser Route aktuell nicht verwendet)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste der Bücher mit Lesefortschritt"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "post": {
+        "summary": "Buch zum Shelf des Nutzers hinzufügen",
+        "tags": [
+          "Books"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Book-ID (wird in dieser Route aktuell nicht verwendet)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "isbn"
+                ],
+                "properties": {
+                  "isbn": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Buch erfolgreich hinzugefügt"
+          },
+          "400": {
+            "description": "ISBN fehlt oder ungültig"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "409": {
+            "description": "Buch bereits im Shelf"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Buch aus dem Shelf des Nutzers entfernen",
+        "tags": [
+          "Books"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Book-ID (wird in dieser Route aktuell nicht verwendet, stattdessen Query-Parameter id)"
+          },
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Book-ID des zu löschenden Eintrags"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Buch erfolgreich entfernt"
+          },
+          "400": {
+            "description": "Book-ID fehlt"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "404": {
+            "description": "Buch nicht gefunden"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      }
+    },
+    "/api/books/pages": {
+      "patch": {
+        "summary": "Lesefortschritt und/oder Gesamtseitenzahl eines Buches aktualisieren",
+        "tags": [
+          "Books"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "bookId"
+                ],
+                "properties": {
+                  "bookId": {
+                    "type": "integer"
+                  },
+                  "pagesRead": {
+                    "type": "integer"
+                  },
+                  "totalPages": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich aktualisiert"
+          },
+          "400": {
+            "description": "bookId fehlt"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      }
+    },
+    "/api/books": {
+      "get": {
+        "summary": "Alle Bücher des eingeloggten Users abrufen",
+        "tags": [
+          "Books"
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste aller Bücher des Users"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "post": {
+        "summary": "Buch zum Shelf des Users hinzufügen",
+        "tags": [
+          "Books"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "isbn"
+                ],
+                "properties": {
+                  "isbn": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Buch zum Shelf hinzugefügt"
+          },
+          "400": {
+            "description": "Ungültige Daten"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "409": {
+            "description": "Buch bereits im Shelf"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Buch aus dem Shelf des Users entfernen",
+        "tags": [
+          "Books"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Die Book-ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Buch entfernt"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "404": {
+            "description": "Buch nicht gefunden"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      }
+    },
+    "/api/friends": {
+      "get": {
+        "summary": "Alle Nutzer mit Freundschaftsstatus abrufen",
+        "tags": [
+          "Friends"
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste aller Nutzer mit isFriend und mutualCount"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "post": {
+        "summary": "Nutzer als Freund hinzufügen",
+        "tags": [
+          "Friends"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "targetId"
+                ],
+                "properties": {
+                  "targetId": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Freundschaft erfolgreich erstellt"
+          },
+          "400": {
+            "description": "Ungültige Benutzer-ID"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "409": {
+            "description": "Bereits befreundet"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Freundschaft entfernen",
+        "tags": [
+          "Friends"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "targetId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID des zu entfernenden Freundes"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Freundschaft erfolgreich entfernt"
+          },
+          "400": {
+            "description": "targetId fehlt"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      }
+    },
+    "/api/login": {
+      "post": {
+        "summary": "Einloggen",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich eingeloggt"
+          },
+          "400": {
+            "description": "Pflichtfelder fehlen"
+          },
+          "401": {
+            "description": "Falsches Passwort"
+          },
+          "404": {
+            "description": "Nutzer nicht gefunden"
+          },
+          "429": {
+            "description": "Zu viele Versuche"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      }
+    },
+    "/api/reviews": {
+      "get": {
+        "summary": "Eigene Review + Reviews von Freunden für ein Buch abrufen",
+        "tags": [
+          "Reviews"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "isbn",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ISBN des Buches"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Eigene Review und Freundes-Reviews"
+          },
+          "400": {
+            "description": "ISBN fehlt"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "post": {
+        "summary": "Eigene Review erstellen oder aktualisieren",
+        "tags": [
+          "Reviews"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "isbn",
+                  "rating"
+                ],
+                "properties": {
+                  "isbn": {
+                    "type": "string"
+                  },
+                  "rating": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Review erfolgreich erstellt/aktualisiert"
+          },
+          "400": {
+            "description": "Pflichtfelder fehlen oder Rating ungültig"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Eigene Review für ein Buch löschen",
+        "tags": [
+          "Reviews"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "isbn",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ISBN des Buches"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review erfolgreich gelöscht"
+          },
+          "400": {
+            "description": "ISBN fehlt"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "404": {
+            "description": "Buch nicht gefunden"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      }
+    },
+    "/api": {
+      "get": {
+        "tags": [
+          "Dokumentation"
+        ],
+        "summary": "OpenAPI Spezifikation abrufen",
+        "description": "Gibt die vollständige OpenAPI 3.0 JSON-Spezifikation der EpiLog API zurück",
+        "responses": {
+          "200": {
+            "description": "OpenAPI Spezifikation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{id}/avatar": {
+      "get": {
+        "summary": "Profilbild abrufen",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profilbild-Pfad"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "404": {
+            "description": "Nutzer nicht gefunden"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "post": {
+        "summary": "Profilbild hochladen",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "profilePic": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Profilbild gespeichert"
+          },
+          "400": {
+            "description": "Kein Bild"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      }
+    },
+    "/api/users/{id}/books/{b_id}": {
+      "get": {
+        "summary": "Einzelnes Buch eines Nutzers abrufen",
+        "tags": [
+          "Reading"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "b_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Nutzer mit Buch"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "put": {
+        "summary": "Lesedaten eines Buches aktualisieren",
+        "tags": [
+          "Reading"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "b_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pages_read": {
+                    "type": "integer"
+                  },
+                  "start_date": {
+                    "type": "string"
+                  },
+                  "read_date": {
+                    "type": "string"
+                  },
+                  "rating": {
+                    "type": "integer"
+                  },
+                  "rating_text": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lesedaten aktualisiert"
+          },
+          "400": {
+            "description": "Keine gültigen Daten"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "404": {
+            "description": "Eintrag nicht gefunden"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Lesedaten eines Buches aktualisieren",
+        "tags": [
+          "Reading"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "b_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pages_read": {
+                    "type": "integer"
+                  },
+                  "start_date": {
+                    "type": "string"
+                  },
+                  "read_date": {
+                    "type": "string"
+                  },
+                  "rating": {
+                    "type": "integer"
+                  },
+                  "rating_text": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lesedaten aktualisiert"
+          },
+          "400": {
+            "description": "Keine gültigen Daten"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "404": {
+            "description": "Eintrag nicht gefunden"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Buch von Nutzer entfernen",
+        "tags": [
+          "Reading"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "b_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Buch entfernt"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "404": {
+            "description": "Eintrag nicht gefunden"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      }
+    },
+    "/api/users/{id}/books": {
+      "get": {
+        "summary": "Bücher eines Nutzers abrufen",
+        "tags": [
+          "Reading"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Nutzer mit Büchern"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "post": {
+        "summary": "Buch zu Nutzer hinzufügen",
+        "tags": [
+          "Reading"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "b_id"
+                ],
+                "properties": {
+                  "b_id": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Buch hinzugefügt"
+          },
+          "400": {
+            "description": "Pflichtfelder fehlen"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "404": {
+            "description": "Nutzer oder Buch nicht gefunden"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      }
+    },
+    "/api/users/{id}/readingactivity": {
+      "get": {
+        "summary": "Leseaktivität abrufen",
+        "tags": [
+          "ReadingActivity"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "User ID"
+          },
+          {
+            "in": "query",
+            "name": "min",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Startdatum (z.B. 2026-01-01)"
+          },
+          {
+            "in": "query",
+            "name": "max",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Enddatum (z.B. 2026-06-29)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste der Leseaktivitäten"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "post": {
+        "summary": "Leseaktivität anlegen oder Seiten hinzufügen",
+        "tags": [
+          "ReadingActivity"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "User ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "pagesRead"
+                ],
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Optional, default ist heute"
+                  },
+                  "pagesRead": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Leseaktivität erfolgreich angelegt"
+          },
+          "400": {
+            "description": "Ungültige Anfragedaten"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Leseaktivität löschen",
+        "tags": [
+          "ReadingActivity"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "User ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "date"
+                ],
+                "properties": {
+                  "date": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Leseaktivität erfolgreich gelöscht"
+          },
+          "400": {
+            "description": "Ungültige Anfragedaten"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "404": {
+            "description": "Nicht gefunden"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      }
+    },
+    "/api/users/{id}": {
+      "get": {
+        "summary": "Nutzer abrufen",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Nutzer"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "put": {
+        "summary": "Nutzer aktualisieren",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "firstname": {
+                    "type": "string"
+                  },
+                  "lastname": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string"
+                  },
+                  "quote": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "readStreak": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Nutzer aktualisiert"
+          },
+          "400": {
+            "description": "Keine gültigen Daten"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "404": {
+            "description": "Nutzer nicht gefunden"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Nutzer aktualisieren",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "firstname": {
+                    "type": "string"
+                  },
+                  "lastname": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string"
+                  },
+                  "quote": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "readStreak": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Nutzer aktualisiert"
+          },
+          "400": {
+            "description": "Keine gültigen Daten"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "404": {
+            "description": "Nutzer nicht gefunden"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Nutzer löschen",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Nutzer gelöscht"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      }
+    },
+    "/api/users/me": {
+      "get": {
+        "summary": "Eigene Nutzerdaten abrufen",
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Eigene Nutzerdaten erfolgreich abgerufen"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      }
+    },
+    "/api/users": {
+      "get": {
+        "summary": "Alle Nutzer abrufen",
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste aller Nutzer"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "post": {
+        "summary": "Nutzer anlegen",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "username",
+                  "password",
+                  "firstname"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "firstname": {
+                    "type": "string"
+                  },
+                  "lastname": {
+                    "type": "string"
+                  },
+                  "quote": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Nutzer erfolgreich angelegt"
+          },
+          "400": {
+            "description": "Pflichtfelder fehlen"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Eigenes Profil aktualisieren",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstname": {
+                    "type": "string"
+                  },
+                  "lastname": {
+                    "type": "string"
+                  },
+                  "quote": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profil erfolgreich aktualisiert"
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      }
+    }
+  },
+  "components": {},
+  "tags": []
+}

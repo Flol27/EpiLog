@@ -11,11 +11,13 @@ datasource db {
 }
 
 model Book {
-  id    Int     @id @default(autoincrement())
-  isbn  String  @unique
-  title String?
+  id         Int     @id @default(autoincrement())
+  isbn       String  @unique
+  title      String?
+  totalPages Int?
 
   bookUsers BookUser[]
+  reviews   Review[]
 }
 
 model User {
@@ -33,8 +35,8 @@ model User {
   quote             String?
   createdAt         DateTime  @default(now())
 
-  bookUsers  BookUser[]
-  readingActivities ReadingActivity[]
+  bookUsers       BookUser[]
+  reviews         Review[]
   friendshipsFrom Friendship[] @relation("FriendshipFrom")
   friendshipsTo   Friendship[] @relation("FriendshipTo")
 }
@@ -45,24 +47,12 @@ model BookUser {
   pagesRead  Int?
   startDate  DateTime?
   readDate   DateTime?
-  rating     Int?
-  ratingText String?
+  updatedAt  DateTime  @default(now()) @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@id([userId, bookId])
-}
-
-
-model ReadingActivity {
-  userId    Int
-  date      DateTime @default(now())
-  pagesRead Int      @default(0)
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@id([userId, date])
 }
 
 model Friendship {
@@ -73,5 +63,20 @@ model Friendship {
   from User @relation("FriendshipFrom", fields: [fromId], references: [id], onDelete: Cascade)
   to   User @relation("FriendshipTo",   fields: [toId],   references: [id], onDelete: Cascade)
 
-  @@unique([fromId, toId])
+  @@id([fromId, toId])
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  bookId    Int
+  rating    Int
+  text      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
 }

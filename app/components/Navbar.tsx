@@ -28,6 +28,7 @@ export default function Navbar() {
 
   if (!mounted) return null;
   if (!me) return null;
+  if (pathname === "/docs") return null;
 
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" }).catch(() => {});

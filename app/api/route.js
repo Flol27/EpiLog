@@ -1,4 +1,6 @@
+import openApiSpec from '@/app/api/openapi.json';
 import { getApiDocs } from '@/lib/swagger';
+
 
 /**
  * @swagger
@@ -17,5 +19,6 @@ import { getApiDocs } from '@/lib/swagger';
  *               type: object
  */
 export async function GET() {
-    return Response.json(getApiDocs());
+    return Response.json(openApiSpec);
+    // return Response.json(getApiDocs());
 }

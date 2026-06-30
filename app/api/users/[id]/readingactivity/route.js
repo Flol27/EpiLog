@@ -1,4 +1,4 @@
-//file:@/app/api/users/[id]/readingactivity
+//@/app/api/users/[id]/readingactivity
 import { NextResponse } from 'next/server';
 import { prisma } from "@/lib/prisma";
 import { authorized } from '@/app/lib/auth';
