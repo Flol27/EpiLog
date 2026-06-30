@@ -1,8 +1,23 @@
+//@/app/api/me
 import { NextRequest, NextResponse } from 'next/server';
 import { authorized } from '@/app/lib/auth';
 import { prisma } from '@/lib/prisma';
 
+/**
+ * @swagger
+ * /api/me:
+ *   get:
+ *     summary: Eigene Nutzerdaten des eingeloggten Nutzers abrufen
+ *     tags:
+ *       - Users
+ *     responses:
+ *       200:
+ *         description: Nutzerdaten erfolgreich abgerufen
+ *       401:
+ *         description: Nicht autorisiert
+ */
 export async function GET(request: NextRequest) {
+
     try {
         const userId = await authorized('user', request);
         if (!userId) {
