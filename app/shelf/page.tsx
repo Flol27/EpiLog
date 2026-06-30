@@ -46,7 +46,7 @@ export default function Shelf() {
           return;
         }
 
-        // Load OpenLibrary details for each ISBN in parallel
+        // Für JEDE ISBN parallel die Details abfragen
         const fullBooksPromises = itemsArray.map(async (dbItem: any) => {
           const isbn = dbItem.isbn;
           if (!isbn) return null;
@@ -66,14 +66,16 @@ export default function Shelf() {
               coverUrl: olBook.coverKey ? `https://covers.openlibrary.org/b/olid/${olBook.coverKey}-L.jpg` : null,
               description: "Details loaded from OpenLibrary.",
               pagesRead: dbItem.pagesRead || 0,
-              // Prioritize DB value, fallback to OpenLibrary
-              totalPages: dbItem.totalPages || olBook.number_of_pages || 0,
+              // Priorisiert den DB-Wert (manuelle Eingabe), danach OpenLibrary Median oder reguläre Seitenanzahl
+              totalPages: dbItem.totalPages || olBook.number_of_pages_median || olBook.number_of_pages || 0,
             };
           } catch {
             return {
-              id: dbItem.id, isbn,
+              id: dbItem.id, 
+              isbn,
               title: dbItem.title || `Error loading (${isbn})`,
-              author: "API Error", genre: "Unknown",
+              author: "API Error", 
+              genre: "Unknown",
               pagesRead: dbItem.pagesRead || 0,
               totalPages: dbItem.totalPages || 0,
             };
@@ -106,6 +108,7 @@ export default function Shelf() {
           : book
       )
     );
+    
     setSelectedBook((prev: any) =>
       prev && String(prev.id) === String(bookId)
         ? { ...prev, pagesRead: newPages, ...(newTotal !== undefined ? { totalPages: newTotal } : {}) }
@@ -212,7 +215,8 @@ export default function Shelf() {
                 <div>
                   <h3 className="text-white font-semibold group-hover:text-yellow-400 transition-colors truncate">{book.title}</h3>
                   <p className="text-zinc-400 text-sm truncate">{book.author}</p>
-                  {book.totalPages > 0 ? (
+                  
+                  {book.totalPages && book.totalPages > 0 ? (
                     <div className="mt-1.5 text-xs font-medium text-zinc-500">
                       <div className="flex justify-between mb-1">
                         <span>{book.pagesRead} / {book.totalPages} p</span>
