@@ -132,25 +132,27 @@ import { unlink } from 'fs/promises'; // Oben zu den Imports hinzufügen, falls 
 
 /**
  * @swagger
- * /api/users/{id}/avatar:
- * delete:
- * summary: Profilbild löschen
- * tags: [Users]
- * parameters:
- * - in: path
- * name: id
- * required: true
- * schema:
- * type: integer
- * responses:
- * 200:
- * description: Profilbild erfolgreich gelöscht
- * 401:
- * description: Nicht autorisiert
- * 404:
- * description: Nutzer oder Bild nicht gefunden
- * 500:
- * description: Serverfehler
+ * /api/users/{id}/profile-picture:
+ *   delete:
+ *     summary: Profilbild eines Nutzers löschen
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User-ID
+ *     responses:
+ *       200:
+ *         description: Profilbild erfolgreich gelöscht
+ *       401:
+ *         description: Nicht autorisiert
+ *       404:
+ *         description: Nutzer nicht gefunden
+ *       500:
+ *         description: Serverfehler
  */
 export async function DELETE(request, { params }) {
     try {
