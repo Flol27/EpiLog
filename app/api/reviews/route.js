@@ -110,8 +110,8 @@ export async function POST(request) {
         // Upsert review
         const review = await prisma.review.upsert({
             where: { userId_bookId: { userId, bookId: book.id } },
-            update: { rating, text: text || null, updatedAt: new Date() },
-                                                  create: { userId, bookId: book.id, rating, text: text || null },
+            update: { rating: rating, text: text || null, updatedAt: new Date() },
+            create: { userId: userId, bookId: book.id, rating: rating, text: text || null },
         });
         return NextResponse.json({ review }, { status: 201 });
     } catch (error) {
