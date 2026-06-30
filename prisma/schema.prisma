@@ -19,6 +19,7 @@ model Book {
   totalPages Int?       
   
   bookUsers  BookUser[]
+  readingSessions ReadingSession[]
 }
 
 model User {
@@ -37,6 +38,7 @@ model User {
   createdAt           DateTime  @default(now())
 
   bookUsers  BookUser[]
+  readingSessions ReadingSession[]
 }
 
 model BookUser {
@@ -48,10 +50,21 @@ model BookUser {
   rating             Int?
   ratingText         String?
 
-  updatedAt  DateTime @default(now()) @updatedAt 
+  updatedAt    DateTime @default(now()) @updatedAt
   
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@id([userId, bookId])
+}
+
+model ReadingSession {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  bookId    Int
+  pagesRead Int      // Wie viele Seiten in DIESER spezifischen Session gelesen wurden
+  date      DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
 }

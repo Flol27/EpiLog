@@ -26,6 +26,9 @@ export async function GET(request) {
         // 1. Prisma holt die Daten inklusive totalPages
         const bookUsers = await prisma.bookUser.findMany({
             where: { userId: userId },
+            orderBy: {
+                updatedAt: 'desc' // Sortiert nach dem letzten Änderungsdatum
+            },
             include: {
                 book: {
                     select: {
@@ -54,6 +57,9 @@ export async function GET(request) {
         return NextResponse.json({ books }, { status: 200 });
 
     } catch (error) {
+        // Hier fügen wir ein detailliertes Log hinzu
+        console.error("API BOOKS ERROR DETAILED:", error); 
+        
         return NextResponse.json(
             { error: 'Fehler beim Abrufen der Bücher', message: error.message },
             { status: 500 }
