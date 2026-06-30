@@ -111,14 +111,14 @@ export async function POST(request) {
 
         if (!tools.checkISBN(isbn)) return response.WRONGDATA("ISBN überprüfen", isbn);
 
-        // Buch anlegen falls es noch nicht existiert (upsert)
+        // 1. Buch anlegen oder finden
         const book = await prisma.book.upsert({
             where:  { isbn },
             update: { title },
             create: { isbn, title },
         });
 
-        // Prüfen ob der User das Buch bereits im Shelf hat
+        // 2. Prüfen ob der User das Buch bereits im Shelf hat
         const existing = await prisma.bookUser.findUnique({
             where: { userId_bookId: { userId, bookId: book.id } }
         });
@@ -130,24 +130,18 @@ export async function POST(request) {
             );
         }
 
-        // Verknüpfung User <-> Buch anlegen
-        const bookUsers = await prisma.bookUser.findMany({
-            where: { userId: userId },
-            include: {
-                book: {
-                    select: {
-                        id: true,
-                        isbn: true,
-                        title: true,
-                        totalPages: true, // <-- DIESE ZEILE HINZUFÜGEN
-                    }
-                }
+        // 3. WICHTIG: Verknüpfung User <-> Buch tatsächlich anlegen
+        const bookUser = await prisma.bookUser.create({
+            data: {
+                userId: userId,
+                bookId: book.id
             }
         });
 
         return NextResponse.json({ book, bookUser }, { status: 201 });
 
     } catch (error) {
+        console.error("Fehler beim Hinzufügen:", error);
         return NextResponse.json(
             { error: 'Fehler beim Hinzufügen des Buches', message: error.message },
             { status: 500 }
