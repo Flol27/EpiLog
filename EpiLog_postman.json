@@ -1,0 +1,935 @@
+{
+  "info": {
+    "name": "EpiLog_deployed",
+    "description": null,
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Users_get",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/users",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "users"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Users_post",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/users",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "users"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\":\"rudi@rudi.de\",\n  \"username\":\"rudi\",\n  \"password\":\"rudi123\",\n  \"firstname\":\"Rudi\",\n  \"lastname\":\"Schanbacher\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Users_del",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/users/3",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "users",
+                "3"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "User_put",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/users/1",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lastname\":\"georg.schachmacher@gmail.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Users_get_id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/users/1",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "get_me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/me",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "me"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "get_users_me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/users/me",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "users",
+                "me"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Books",
+      "item": [
+        {
+          "name": "Books_get",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/books",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "books"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Books_get_id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/books/4",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "books",
+                "4"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Books_post",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/books",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "books"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isbn\":123,\n  \"title\":\"Mein Kampf\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Books_put",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/books/1",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "books",
+                "1"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isbn\":1234567890846225\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Books_del",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/books/1",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "books",
+                "1"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Books_patch_pages",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/books/pages",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "books",
+                "pages"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookId\":4,\n  \"pagesRead\":30,\n  \"totalPages\":300\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reads",
+      "item": [
+        {
+          "name": "Reads_get",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/users/1/books",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "books"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Reads_post",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/users/1/books",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "books"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"b_id\":2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Reads_get_id_b-id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/users/1/books/1",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "books",
+                "1"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Reads_put_if_b-id",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/users/1/books/1",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "books",
+                "1"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"pages_read\": \"1\",\n    \"readstreak_edit_date\": \"12.12.2012\",\n    \"start_date\": \"14.10.2006\",\n    \"read_date\": \"15.10.2006\",\n    \"rating\": \"10\",\n    \"rating_text\": \"Beschde\"\n  }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Reads_del_id_b-id",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/users/1/books/1",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "books",
+                "1"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Friends",
+      "item": [
+        {
+          "name": "Friends_post",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/friends",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "friends"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetId\":3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Friends_del",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/friends?targetId=3",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "friends"
+              ],
+              "query": [
+                {
+                  "key": "targetId",
+                  "value": "3"
+                }
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Friends_get",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/friends",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "friends"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Reviews_post",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/reviews",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "reviews"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isbn\":\"9781903019245\",\n  \"rating\":5,\n  \"text\":\"Very Good\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Reviews_del",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/reviews?isbn=9781903019245",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "reviews"
+              ],
+              "query": [
+                {
+                  "key": "isbn",
+                  "value": "9781903019245"
+                }
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Reviews_get",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/reviews?isbn=9781903019245",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "reviews"
+              ],
+              "query": [
+                {
+                  "key": "isbn",
+                  "value": "9781903019245"
+                }
+              ],
+              "variable": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Dashboard_get",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/dashboard-data",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "dashboard-data"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ReadingActivity",
+      "item": [
+        {
+          "name": "ReadingActivity_get",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "https://epilog.schamagusa.de/api/users/2/readingactivity",
+              "protocol": "https",
+              "host": [
+                "epilog",
+                "schamagusa",
+                "de"
+              ],
+              "path": [
+                "api",
+                "users",
+                "2",
+                "readingactivity"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "post_logout",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "auth": {
+          "type": "noauth"
+        },
+        "description": "",
+        "url": {
+          "raw": "https://epilog.schamagusa.de/api/logout",
+          "protocol": "https",
+          "host": [
+            "epilog",
+            "schamagusa",
+            "de"
+          ],
+          "path": [
+            "api",
+            "logout"
+          ],
+          "query": [],
+          "variable": []
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "get_api",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "noauth"
+        },
+        "description": "",
+        "url": {
+          "raw": "https://epilog.schamagusa.de/api",
+          "protocol": "https",
+          "host": [
+            "epilog",
+            "schamagusa",
+            "de"
+          ],
+          "path": [
+            "api"
+          ],
+          "query": [],
+          "variable": []
+        }
+      }
+    },
+    {
+      "name": "post_login",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "auth": {
+          "type": "noauth"
+        },
+        "description": "",
+        "url": {
+          "raw": "https://epilog.schamagusa.de/api/login",
+          "protocol": "https",
+          "host": [
+            "epilog",
+            "schamagusa",
+            "de"
+          ],
+          "path": [
+            "api",
+            "login"
+          ],
+          "query": [],
+          "variable": []
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\":\"admin\",\n  \"password\":\"wert\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "variable": []
+}
