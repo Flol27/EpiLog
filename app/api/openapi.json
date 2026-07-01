@@ -164,7 +164,7 @@
     },
     "/api/books/pages": {
       "patch": {
-        "summary": "Lesefortschritt und/oder Gesamtseitenzahl eines Buches aktualisieren",
+        "summary": "Lesefortschritt (gelesene Seiten) und/oder Gesamtseitenzahl eines Buches aktualisieren",
         "tags": [
           "Books"
         ],
@@ -179,13 +179,16 @@
                 ],
                 "properties": {
                   "bookId": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "ID des Buches"
                   },
                   "pagesRead": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Neuer Gesamtstand der gelesenen Seiten. Falls größer als der bisherige Stand, wird zusätzlich eine ReadingSession mit der Differenz angelegt."
                   },
                   "totalPages": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Neue Gesamtseitenzahl des Buches"
                   }
                 }
               }
@@ -194,7 +197,20 @@
         },
         "responses": {
           "200": {
-            "description": "Erfolgreich aktualisiert"
+            "description": "Update erfolgreich",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "bookId fehlt"
@@ -216,7 +232,53 @@
         ],
         "responses": {
           "200": {
-            "description": "Liste aller Bücher des Users"
+            "description": "Liste aller Bücher des Users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "books": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "isbn": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "totalPages": {
+                            "type": "integer"
+                          },
+                          "pagesRead": {
+                            "type": "integer"
+                          },
+                          "startDate": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "readDate": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "rating": {
+                            "type": "number"
+                          },
+                          "ratingText": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "Nicht autorisiert"
@@ -254,10 +316,44 @@
         },
         "responses": {
           "201": {
-            "description": "Buch zum Shelf hinzugefügt"
+            "description": "Buch zum Shelf hinzugefügt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "book": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "isbn": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "bookUser": {
+                      "type": "object",
+                      "properties": {
+                        "userId": {
+                          "type": "integer"
+                        },
+                        "bookId": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
-            "description": "Ungültige Daten"
+            "description": "Ungültige Daten (ISBN fehlt oder ist ungültig)"
           },
           "401": {
             "description": "Nicht autorisiert"
@@ -290,11 +386,96 @@
           "200": {
             "description": "Buch entfernt"
           },
+          "400": {
+            "description": "Book-ID fehlt"
+          },
           "401": {
             "description": "Nicht autorisiert"
           },
           "404": {
-            "description": "Buch nicht gefunden"
+            "description": "Buch nicht in deinem Shelf gefunden"
+          },
+          "500": {
+            "description": "Serverfehler"
+          }
+        }
+      }
+    },
+    "/api/dashboard-data": {
+      "get": {
+        "summary": "Dashboard-Übersichtsdaten des eingeloggten Users abrufen (Buchanzahl, gelesene Seiten, Lese-Historie der letzten 6 Monate, zuletzt bearbeitetes Buch)",
+        "tags": [
+          "Dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "Dashboard-Daten erfolgreich abgerufen",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "firstname": {
+                      "type": "string"
+                    },
+                    "bookCount": {
+                      "type": "integer",
+                      "description": "Anzahl der Bücher im Shelf des Users"
+                    },
+                    "totalPagesRead": {
+                      "type": "integer",
+                      "description": "Summe aller gelesenen Seiten über alle Bücher"
+                    },
+                    "sessions": {
+                      "type": "array",
+                      "description": "Lese-Sessions der letzten 6 Monate",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "date": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "pagesRead": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    },
+                    "lastBook": {
+                      "type": "object",
+                      "nullable": true,
+                      "description": "Zuletzt bearbeitetes Buch (null, falls noch keins vorhanden)",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "pagesRead": {
+                          "type": "integer"
+                        },
+                        "totalPages": {
+                          "type": "integer"
+                        },
+                        "coverKey": {
+                          "type": "string",
+                          "nullable": true,
+                          "description": "Cover-Key von OpenLibrary, falls gefunden"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Nicht autorisiert"
+          },
+          "404": {
+            "description": "Nutzer nicht gefunden"
           },
           "500": {
             "description": "Serverfehler"
@@ -658,7 +839,7 @@
         }
       }
     },
-    "/api/users/{id}/avatar": {
+    "/api/users/{id}/profile-picture": {
       "delete": {
         "summary": "Profilbild eines Nutzers löschen",
         "tags": [

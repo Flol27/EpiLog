@@ -1,40 +1,75 @@
+// @/app/api/books/pages/route.js
 import { NextResponse } from 'next/server';
 import { prisma } from "@/lib/prisma";
 import { authorized } from '@/app/lib/auth';
 import * as response from '@/app/lib/response';
 
+/**
+ * @swagger
+ * /api/books/pages:
+ *   patch:
+ *     summary: Lesefortschritt (gelesene Seiten) und/oder Gesamtseitenzahl eines Buches aktualisieren
+ *     tags: [Books]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - bookId
+ *             properties:
+ *               bookId:
+ *                 type: integer
+ *                 description: ID des Buches
+ *               pagesRead:
+ *                 type: integer
+ *                 description: Neuer Gesamtstand der gelesenen Seiten. Falls größer als der bisherige Stand, wird zusätzlich eine ReadingSession mit der Differenz angelegt.
+ *               totalPages:
+ *                 type: integer
+ *                 description: Neue Gesamtseitenzahl des Buches
+ *     responses:
+ *       200:
+ *         description: Update erfolgreich
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *       400:
+ *         description: bookId fehlt
+ *       401:
+ *         description: Nicht autorisiert
+ *       500:
+ *         description: Serverfehler
+ */
 export async function PATCH(request) {
     try {
         // 1. Auth-Check (aus HEAD)
         const userId = await authorized('user', request);
         if (!userId) { return response.NOTAUTHORIZED(); }
-
         const { bookId, pagesRead, totalPages } = await request.json();
-
         if (!bookId) {
             return NextResponse.json({ error: 'bookId fehlt.' }, { status: 400 });
         }
-
         const parsedBookId = parseInt(bookId);
-
         // 2. Gelesene Seiten aktualisieren und Session erstellen (aus DB)
         if (pagesRead !== undefined) {
             const newPagesRead = parseInt(pagesRead);
-
             // Alten Stand abrufen, um die Differenz zu berechnen
             const currentBookUser = await prisma.bookUser.findUnique({
                 where: { userId_bookId: { userId, bookId: parsedBookId } }
             });
-
             const previousPagesRead = currentBookUser?.pagesRead || 0;
             const pagesReadDelta = newPagesRead - previousPagesRead;
-
             // Haupt-Tabelle (BookUser) mit neuem Gesamtstand aktualisieren
             await prisma.bookUser.update({
                 where: { userId_bookId: { userId, bookId: parsedBookId } },
                 data:  { pagesRead: newPagesRead }
             });
-
             // Neue ReadingSession erstellen, falls tatsächlich weitergelesen wurde
             if (pagesReadDelta > 0) {
                 await prisma.readingSession.create({
@@ -47,7 +82,6 @@ export async function PATCH(request) {
                 });
             }
         }
-
         // 3. Update totalPages in Book (kombiniert)
         if (totalPages !== undefined) {
             await prisma.book.update({
@@ -55,9 +89,7 @@ export async function PATCH(request) {
                 data:  { totalPages: parseInt(totalPages) }
             });
         }
-
         return NextResponse.json({ success: true }, { status: 200 });
-
     } catch (error) {
         console.error("Fehler beim Speichern:", error);
         return NextResponse.json({ error: "Serverfehler", message: error.message }, { status: 500 });

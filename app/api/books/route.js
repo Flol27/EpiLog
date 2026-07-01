@@ -1,3 +1,4 @@
+//@/app/api/books
 import { NextResponse } from 'next/server';
 import { prisma } from "@/lib/prisma";
 import { authorized } from '@/app/lib/auth';
@@ -13,6 +14,36 @@ import * as tools from '@/app/lib/tools';
  *     responses:
  *       200:
  *         description: Liste aller Bücher des Users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 books:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       isbn:
+ *                         type: string
+ *                       title:
+ *                         type: string
+ *                       totalPages:
+ *                         type: integer
+ *                       pagesRead:
+ *                         type: integer
+ *                       startDate:
+ *                         type: string
+ *                         format: date-time
+ *                       readDate:
+ *                         type: string
+ *                         format: date-time
+ *                       rating:
+ *                         type: number
+ *                       ratingText:
+ *                         type: string
  *       401:
  *         description: Nicht autorisiert
  *       500:
@@ -58,8 +89,8 @@ export async function GET(request) {
 
     } catch (error) {
         // Hier fügen wir ein detailliertes Log hinzu
-        console.error("API BOOKS ERROR DETAILED:", error); 
-        
+        console.error("API BOOKS ERROR DETAILED:", error);
+
         return NextResponse.json(
             { error: 'Fehler beim Abrufen der Bücher', message: error.message },
             { status: 500 }
@@ -89,8 +120,29 @@ export async function GET(request) {
  *     responses:
  *       201:
  *         description: Buch zum Shelf hinzugefügt
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 book:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     isbn:
+ *                       type: string
+ *                     title:
+ *                       type: string
+ *                 bookUser:
+ *                   type: object
+ *                   properties:
+ *                     userId:
+ *                       type: integer
+ *                     bookId:
+ *                       type: integer
  *       400:
- *         description: Ungültige Daten
+ *         description: Ungültige Daten (ISBN fehlt oder ist ungültig)
  *       401:
  *         description: Nicht autorisiert
  *       409:
@@ -165,10 +217,12 @@ export async function POST(request) {
  *     responses:
  *       200:
  *         description: Buch entfernt
+ *       400:
+ *         description: Book-ID fehlt
  *       401:
  *         description: Nicht autorisiert
  *       404:
- *         description: Buch nicht gefunden
+ *         description: Buch nicht in deinem Shelf gefunden
  *       500:
  *         description: Serverfehler
  */

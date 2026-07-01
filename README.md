@@ -16,10 +16,10 @@
 ## Teamübersicht & Zeitaufwand
 | Mitglied | Aufgabe / Fokus | Aufwand (Stunden) | Anteil (%) |
 | :--- | :--- | :---: | :---: |
-| **Flo** | Backend, Funktionalität | 15h | 25% |
-| **Peter** | Backend, Funktionalität | 15h | 25% |
-| **Marcel** | Frontend, UI | 15h | 25% |
-| **Rudi** | Datenbank, API | 15h | 25% |
+| **Flo** | Backend, Funktionalität | 45h | 25% |
+| **Peter** | Backend, Funktionalität | 45h | 25% |
+| **Marcel** | Frontend, UI | 45h | 25% |
+| **Rudi** | Datenbank, API | 45h | 25% |
 
 ---
 
