@@ -53,6 +53,9 @@ npm install
 ```bash
 cp example.env .env
 nano .env
+OR
+Copy-Item example.env .env
+notepad .env
 ```
 > [!TIP]
 > Setup env file:
